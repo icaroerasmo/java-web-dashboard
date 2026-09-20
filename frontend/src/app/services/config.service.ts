@@ -18,4 +18,12 @@ export class ConfigService {
   restartModule(name: string): Observable<any> {
     return this.http.post<any>(`/api/modules/${name}/restart`, {});
   }
+
+  getEnv(name: string): Observable<any> {
+    return this.http.get<any>(`/api/modules/${name}/env`);
+  }
+
+  saveEnv(name: string, envVars: any): Observable<any> {
+    return this.http.put<any>(`/api/modules/${name}/env`, envVars);
+  }
 }

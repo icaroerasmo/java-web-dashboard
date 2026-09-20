@@ -27,37 +27,115 @@
           }
         </div>
 
-        <!-- Tab content -->
-        <div class="tab-content">
-          @if (selectedTab && loading[selectedTab]) {
-            <div class="loading-state">Loading config...</div>
-          }
-          @if (selectedTab && configs[selectedTab]) {
-            <div class="config-scroll">
-              <app-dynamic-form
-                [config]="configs[selectedTab]"
-                [moduleName]="selectedTab"
-              />
-            </div>
-            <div class="save-row">
-              @if (restartMessage) {
-                <span class="restart-status">{{ restartMessage }}</span>
-              }
-              <button class="restart-btn" (click)="restart()" [disabled]="restarting || saving">
-                Restart
-              </button>
-              <button class="save-btn" (click)="save()" [disabled]="saving || restarting">
-                @if (saving) {
-                  Saving...
-                } @else if (savedMessage) {
-                  <span class="saved-ok">{{ savedMessage }}</span>
-                } @else {
-                  Save
+        <!-- Sub-tabs -->
+        @if (selectedTab) {
+          <div class="subtabs-row">
+            <button
+              class="subtab-btn"
+              [class.active]="currentSubTab === 'config'"
+              (click)="switchSubTab('config')">
+              Config
+            </button>
+            <button
+              class="subtab-btn"
+              [class.active]="currentSubTab === 'env'"
+              (click)="switchSubTab('env')">
+              Environment Variables
+            </button>
+          </div>
+        }
+
+        <!-- Config sub-tab -->
+        @if (currentSubTab === 'config') {
+          <div class="tab-content">
+            @if (selectedTab && loading[selectedTab]) {
+              <div class="loading-state">Loading config...</div>
+            }
+            @if (selectedTab && configs[selectedTab]) {
+              <div class="config-scroll">
+                <app-dynamic-form
+                  [config]="configs[selectedTab]"
+                  [moduleName]="selectedTab"
+                />
+              </div>
+              <div class="save-row">
+                @if (restartMessage) {
+                  <span class="restart-status">{{ restartMessage }}</span>
                 }
-              </button>
-            </div>
-          }
-        </div>
+                <button class="restart-btn" (click)="restart()" [disabled]="restarting || saving">
+                  Restart
+                </button>
+                <button class="save-btn" (click)="save()" [disabled]="saving || restarting">
+                  @if (saving) {
+                    Saving...
+                  } @else if (savedMessage) {
+                    <span class="saved-ok">{{ savedMessage }}</span>
+                  } @else {
+                    Save
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Environment Variables sub-tab -->
+        @if (currentSubTab === 'env') {
+          <div class="tab-content">
+            @if (selectedTab && envLoading[selectedTab]) {
+              <div class="loading-state">Loading environment variables...</div>
+            }
+            @if (selectedTab && !envLoading[selectedTab]) {
+              <div class="env-scroll">
+                <table class="env-table">
+                  <thead>
+                    <tr>
+                      <th class="env-col-key">KEY</th>
+                      <th class="env-col-value">VALUE</th>
+                      <th class="env-col-actions"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (env of envVars[selectedTab]; track $index) {
+                      <tr>
+                        <td>
+                          <input
+                            class="env-input"
+                            [(ngModel)]="env.key"
+                            placeholder="VARIABLE_NAME"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            class="env-input"
+                            [(ngModel)]="env.value"
+                            placeholder="value"
+                          />
+                        </td>
+                        <td class="env-actions">
+                          <button class="env-remove-btn" (click)="removeEnvVar($index)">&times;</button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+                <button class="env-add-btn" (click)="addEnvVar()">+ Add Variable</button>
+              </div>
+              <div class="save-row">
+                @if (envMessage) {
+                  <span class="restart-status">{{ envMessage }}</span>
+                }
+                <button class="restart-btn" (click)="saveEnv()" [disabled]="envSaving">
+                  @if (envSaving) {
+                    Applying...
+                  } @else {
+                    Apply & Restart
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        }
       } @else {
         <div class="empty-state">No live Java modules</div>
       }

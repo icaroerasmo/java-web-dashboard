@@ -1,7 +1,11 @@
 package com.icaroerasmo.dashboard.controller;
 
 import com.icaroerasmo.dashboard.config.DashboardProperties;
+import com.icaroerasmo.dashboard.model.EnvVar;
+import com.icaroerasmo.dashboard.service.EnvService;
 import com.icaroerasmo.dashboard.service.ModuleHealthService;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,15 +21,17 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class ModuleController {
 
     private final ModuleHealthService healthService;
     private final DashboardProperties properties;
-    private final RestClient restClient;
+    private final RestClient.Builder builder;
+    private final EnvService envService;
+    private RestClient restClient;
 
-    public ModuleController(ModuleHealthService healthService, DashboardProperties properties, RestClient.Builder builder) {
-        this.healthService = healthService;
-        this.properties = properties;
+    @PostConstruct
+    void init() {
         this.restClient = builder.build();
     }
 
@@ -88,6 +94,31 @@ public class ModuleController {
                     .toBodilessEntity();
         } catch (Exception e) {
             return ResponseEntity.status(502).build();
+        }
+    }
+
+    @GetMapping("/modules/{name}/env")
+    public ResponseEntity<?> getEnv(@PathVariable String name) {
+        if (findBaseUrl(name) == null) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            return ResponseEntity.ok(envService.getEnvVars(name));
+        } catch (Exception e) {
+            return ResponseEntity.status(502).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/modules/{name}/env")
+    public ResponseEntity<?> updateEnv(@PathVariable String name, @RequestBody List<EnvVar> envVars) {
+        if (findBaseUrl(name) == null) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            envService.updateEnvVars(name, envVars);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(502).body(Map.of("error", e.getMessage()));
         }
     }
 
