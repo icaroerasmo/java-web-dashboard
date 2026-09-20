@@ -201,6 +201,41 @@
   border-color: rgba(167, 139, 250, 0.5);
 }
 
+.env-secret-wrapper {
+  position: relative;
+}
+
+.env-secret-wrapper .env-input-secret {
+  padding-right: 36px;
+}
+
+.env-eye-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+  line-height: 0;
+}
+
+.env-eye-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.env-eye-btn svg {
+  display: block;
+}
+
 .env-actions {
   text-align: center;
 }
