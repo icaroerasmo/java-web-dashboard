@@ -1,0 +1,57 @@
+@if (open) {
+  <div class="modal-backdrop" (click)="onBackdropClick($event)">
+    <div class="modal-container">
+      <!-- Close button -->
+      <button class="close-btn" (click)="onClose()">&times;</button>
+
+      <!-- Status indicators row -->
+      <div class="indicators-row">
+        @for (mod of modules; track mod.name) {
+          <div class="indicator-item">
+            <span class="status-dot" [class.up]="mod.status === 'UP'" [class.down]="mod.status === 'DOWN'"></span>
+            <span class="indicator-name">{{ mod.name }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Tabs -->
+      @if (liveJavaModules.length > 0) {
+        <div class="tabs-row">
+          @for (mod of liveJavaModules; track mod.name) {
+            <button
+              class="tab-btn"
+              [class.active]="selectedTab === mod.name"
+              (click)="selectTab(mod.name)">
+              {{ mod.name }}
+            </button>
+          }
+        </div>
+
+        <!-- Tab content -->
+        <div class="tab-content">
+          @if (selectedTab && loading[selectedTab]) {
+            <div class="loading-state">Loading config...</div>
+          }
+          @if (selectedTab && configs[selectedTab]) {
+            <div class="config-scroll">
+              <app-dynamic-form [config]="configs[selectedTab]" />
+            </div>
+            <div class="save-row">
+              <button class="save-btn" (click)="save()" [disabled]="saving">
+                @if (saving) {
+                  Saving...
+                } @else if (savedMessage) {
+                  <span class="saved-ok">{{ savedMessage }}</span>
+                } @else {
+                  Save
+                }
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">No live Java modules</div>
+      }
+    </div>
+  </div>
+}

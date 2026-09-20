@@ -1,0 +1,87 @@
+:host {
+  display: block;
+}
+
+.form-field {
+  margin-bottom: 8px;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.field-label {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  min-width: 160px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.field-input {
+  flex: 1;
+  max-width: 400px;
+  padding: 5px 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.field-input:focus {
+  border-color: rgba(100, 180, 255, 0.5);
+}
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #6cb4ee;
+  cursor: pointer;
+}
+
+.section-block {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.section-label {
+  color: rgba(100, 180, 255, 0.9);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.array-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+  padding: 4px 0;
+}
+
+.array-index {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 11px;
+  font-family: monospace;
+  min-width: 24px;
+  flex-shrink: 0;
+  padding-top: 3px;
+}
+
+.nested .field-row {
+  margin-bottom: 4px;
+}

@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: java-web-dashboard
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+dashboard:
+  modules:
+    - name: java-rtsp-recorder
+      base-url: http://java-rtsp-recorder:8080
+    - name: java-object-detection
+      base-url: http://java-object-detection:8080
+    - name: java-live-transmission
+      base-url: http://java-live-transmission:8080
+    - name: java-telegram-notifier
+      base-url: http://java-telegram-notifier:8080
+  rabbitmq:
+    management-url: http://rabbitmq:15672
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  go2rtc:
+    base-url: http://go2rtc:1984

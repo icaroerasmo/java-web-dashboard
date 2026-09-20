@@ -1,0 +1,55 @@
+@for (key of getKeys(config); track key) {
+  <div class="form-field" [class.nested]="depth > 0">
+    @if (isObject(config[key])) {
+      <div class="section-block">
+        <h4 class="section-label">{{ key }}</h4>
+        <app-dynamic-form [config]="config[key]" [depth]="depth + 1" />
+      </div>
+    } @else if (isArray(config[key])) {
+      <div class="section-block">
+        <h4 class="section-label">{{ key }}</h4>
+        @for (item of config[key]; track $index) {
+          @if (isObject(item)) {
+            <div class="array-item">
+              <span class="array-index">[{{ $index }}]</span>
+              <app-dynamic-form [config]="item" [depth]="depth + 1" />
+            </div>
+          } @else if (isBoolean(item)) {
+            <div class="array-item">
+              <span class="array-index">[{{ $index }}]</span>
+              <label class="field-label">{{ $index }}</label>
+              <input type="checkbox" [(ngModel)]="config[key][$index]" />
+            </div>
+          } @else if (isNumber(item)) {
+            <div class="array-item">
+              <span class="array-index">[{{ $index }}]</span>
+              <label class="field-label">{{ $index }}</label>
+              <input type="number" [(ngModel)]="config[key][$index]" class="field-input" />
+            </div>
+          } @else {
+            <div class="array-item">
+              <span class="array-index">[{{ $index }}]</span>
+              <label class="field-label">{{ $index }}</label>
+              <input type="text" [(ngModel)]="config[key][$index]" class="field-input" />
+            </div>
+          }
+        }
+      </div>
+    } @else if (isBoolean(config[key])) {
+      <div class="field-row">
+        <label class="field-label">{{ key }}</label>
+        <input type="checkbox" [(ngModel)]="config[key]" />
+      </div>
+    } @else if (isNumber(config[key])) {
+      <div class="field-row">
+        <label class="field-label">{{ key }}</label>
+        <input type="number" [(ngModel)]="config[key]" class="field-input" />
+      </div>
+    } @else if (isString(config[key])) {
+      <div class="field-row">
+        <label class="field-label">{{ key }}</label>
+        <input type="text" [(ngModel)]="config[key]" class="field-input" />
+      </div>
+    }
+  </div>
+}

@@ -1,0 +1,23 @@
+<!-- Hamburger button -->
+<button class="hamburger" (click)="toggleMenu()">
+  <span></span>
+  <span></span>
+  <span></span>
+</button>
+
+<!-- Full-screen video stream -->
+<div #videoContainer class="video-container"></div>
+
+<!-- Menu -->
+<app-menu
+  [class.visible]="menuOpen"
+  [style.transform]="menuOpen ? 'translateX(0)' : 'translateX(-100%)'"
+  (openConfigs)="openConfigs()"
+  (close)="closeMenu()"
+/>
+
+<!-- Config modal -->
+<app-config-modal
+  [open]="configModalOpen"
+  (close)="closeConfigModal()"
+/>

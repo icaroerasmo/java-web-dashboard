@@ -1,0 +1,8 @@
+<div class="menu-overlay" (click)="onClose()">
+  <nav class="menu-panel" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="onClose()">&times;</button>
+    <div class="menu-items">
+      <button class="menu-item" (click)="onOpenConfigs()">Configs</button>
+    </div>
+  </nav>
+</div>
