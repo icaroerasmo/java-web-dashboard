@@ -12,11 +12,11 @@ export const ENUM_REGISTRY: Record<string, EnumField[]> = {
   ],
   'java-object-detection': [
     { path: 'object-detection.acceleration.backend', options: ['AUTO', 'OPENCV', 'CUDA', 'OPENCL', 'VULKAN'] },
-    { path: 'object-detection.locale', options: ['pt-BR', 'en-US'] },
+    { path: 'general.locale', options: ['pt-BR', 'en-US'] },
     { path: 'object-detection.streams.cameras[].protocol', options: ['TCP', 'UDP'] },
   ],
   'java-telegram-notifier': [
-    { path: 'locale', options: ['pt-BR', 'en-US'] },
+    { path: 'general.locale', options: ['pt-BR', 'en-US'] },
   ],
   'java-live-transmission': [
     { path: 'live.output.video-codec', options: ['h264_nvenc', 'libx264', 'h264_vaapi'] },
