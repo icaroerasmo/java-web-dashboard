@@ -16,7 +16,7 @@ export const ENUM_REGISTRY: Record<string, EnumField[]> = {
     { path: 'object-detection.streams.cameras[].protocol', options: ['TCP', 'UDP'] },
   ],
   'java-telegram-notifier': [
-    { path: 'telegram-notifier.locale', options: ['pt-BR', 'en-US'] },
+    { path: 'locale', options: ['pt-BR', 'en-US'] },
   ],
   'java-live-transmission': [
     { path: 'live.output.video-codec', options: ['h264_nvenc', 'libx264', 'h264_vaapi'] },
