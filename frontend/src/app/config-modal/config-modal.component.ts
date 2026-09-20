@@ -25,11 +25,11 @@ export class ConfigModalComponent implements OnChanges {
   restarting = false;
   restartMessage = '';
 
-  subTabs: Record<string, 'config' | 'env'> = {};
-  envVars: Record<string, any[]> = {};
-  envLoading: Record<string, boolean> = {};
+  envVars: { key: string; value: string; secret: boolean }[] = [];
+  envLoading = false;
   envSaving = false;
   envMessage = '';
+  revealedSecrets = new Set<number>();
 
   constructor(
     private modulesService: ModulesService,
@@ -46,8 +46,8 @@ export class ConfigModalComponent implements OnChanges {
     return this.modules.filter(m => m.type === 'java' && m.status === 'UP');
   }
 
-  get currentSubTab(): 'config' | 'env' {
-    return this.selectedTab ? (this.subTabs[this.selectedTab] ?? 'config') : 'config';
+  get isEnvironmentTab(): boolean {
+    return this.selectedTab === '__environment__';
   }
 
   loadModules(): void {
@@ -63,10 +63,11 @@ export class ConfigModalComponent implements OnChanges {
 
   selectTab(name: string): void {
     this.selectedTab = name;
-    if (!this.subTabs[name]) {
-      this.subTabs[name] = 'config';
-    }
-    if (!this.configs[name]) {
+    if (name === '__environment__') {
+      if (this.envVars.length === 0 && !this.envLoading) {
+        this.loadGlobalEnv();
+      }
+    } else if (!this.configs[name]) {
       this.loading[name] = true;
       this.configService.getConfig(name).subscribe({
         next: (config) => {
@@ -80,47 +81,45 @@ export class ConfigModalComponent implements OnChanges {
     }
   }
 
-  switchSubTab(tab: 'config' | 'env'): void {
-    if (!this.selectedTab) return;
-    this.subTabs[this.selectedTab] = tab;
-    if (tab === 'env' && !this.envVars[this.selectedTab] && !this.envLoading[this.selectedTab]) {
-      this.loadEnv();
-    }
-  }
-
-  loadEnv(): void {
-    if (!this.selectedTab) return;
-    this.envLoading[this.selectedTab] = true;
-    this.configService.getEnv(this.selectedTab).subscribe({
+  loadGlobalEnv(): void {
+    this.envLoading = true;
+    this.configService.getGlobalEnv().subscribe({
       next: (vars) => {
-        this.envVars[this.selectedTab!] = vars;
-        this.envLoading[this.selectedTab!] = false;
+        this.envVars = vars;
+        this.envLoading = false;
       },
       error: () => {
-        this.envVars[this.selectedTab!] = [];
-        this.envLoading[this.selectedTab!] = false;
+        this.envVars = [];
+        this.envLoading = false;
       }
     });
   }
 
   addEnvVar(): void {
-    if (!this.selectedTab) return;
-    if (!this.envVars[this.selectedTab]) {
-      this.envVars[this.selectedTab] = [];
-    }
-    this.envVars[this.selectedTab].push({ key: '', value: '', ref: null, defaultValue: null });
+    this.envVars.push({ key: '', value: '', secret: false });
   }
 
   removeEnvVar(index: number): void {
-    if (!this.selectedTab || !this.envVars[this.selectedTab]) return;
-    this.envVars[this.selectedTab].splice(index, 1);
+    this.envVars.splice(index, 1);
+    this.revealedSecrets.delete(index);
   }
 
-  saveEnv(): void {
-    if (!this.selectedTab || !this.envVars[this.selectedTab]) return;
+  toggleSecretReveal(index: number): void {
+    if (this.revealedSecrets.has(index)) {
+      this.revealedSecrets.delete(index);
+    } else {
+      this.revealedSecrets.add(index);
+    }
+  }
+
+  isSecretRevealed(index: number): boolean {
+    return this.revealedSecrets.has(index);
+  }
+
+  saveGlobalEnv(): void {
     this.envSaving = true;
     this.envMessage = '';
-    this.configService.saveEnv(this.selectedTab, this.envVars[this.selectedTab]).subscribe({
+    this.configService.saveGlobalEnv(this.envVars).subscribe({
       next: () => {
         this.envSaving = false;
         this.envMessage = 'Applied';

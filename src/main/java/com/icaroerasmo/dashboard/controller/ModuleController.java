@@ -122,6 +122,25 @@ public class ModuleController {
         }
     }
 
+    @GetMapping("/env")
+    public ResponseEntity<?> getGlobalEnv() {
+        try {
+            return ResponseEntity.ok(envService.getGlobalEnvVars());
+        } catch (Exception e) {
+            return ResponseEntity.status(502).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/env")
+    public ResponseEntity<?> updateGlobalEnv(@RequestBody List<EnvVar> envVars) {
+        try {
+            envService.updateGlobalEnvVars(envVars);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(502).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/go2rtc/streams")
     public ResponseEntity<?> getGo2RtcStreams() {
         try {

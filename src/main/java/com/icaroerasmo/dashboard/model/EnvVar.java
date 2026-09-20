@@ -9,4 +9,5 @@ public class EnvVar {
     private String value;
     private String ref;
     private String defaultValue;
+    private boolean secret;
 }

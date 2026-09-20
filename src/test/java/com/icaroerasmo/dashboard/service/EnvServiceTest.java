@@ -148,6 +148,83 @@ class EnvServiceTest {
         assertThrows(IllegalArgumentException.class, () -> envService.getEnvVars("unknown-service"));
     }
 
+    @Test
+    void getGlobalEnvVars_returnsAllVarsWithSecrets() throws Exception {
+        Files.writeString(envFile, """
+                TELEGRAM_CHAT_ID=12345
+                # secret
+                TELEGRAM_BOT_TOKEN=abc123
+                RABBITMQ_HOST=rabbitmq
+                """);
+        List<EnvVar> envVars = envService.getGlobalEnvVars();
+        assertEquals(3, envVars.size());
+
+        EnvVar chatId = envVars.get(0);
+        assertEquals("TELEGRAM_CHAT_ID", chatId.getKey());
+        assertEquals("12345", chatId.getValue());
+        assertFalse(chatId.isSecret());
+
+        EnvVar token = envVars.get(1);
+        assertEquals("TELEGRAM_BOT_TOKEN", token.getKey());
+        assertEquals("abc123", token.getValue());
+        assertTrue(token.isSecret());
+
+        EnvVar host = envVars.get(2);
+        assertEquals("RABBITMQ_HOST", host.getKey());
+        assertFalse(host.isSecret());
+    }
+
+    @Test
+    void updateGlobalEnvVars_writesEnvAndRecreatesAffectedServices() throws Exception {
+        Path fakeBin = tempDir.resolve("fakebin");
+        Files.createDirectories(fakeBin);
+        Path argsFile = tempDir.resolve("args.txt");
+        Path fakeScript = fakeBin.resolve("docker-compose");
+        Files.writeString(fakeScript, "#!/bin/bash\necho \"$@\" >> " + argsFile + "\nexit 0\n");
+        fakeScript.toFile().setExecutable(true);
+        properties.setPodmanComposeBinary(fakeScript.toString());
+
+        List<EnvVar> envVars = envService.getGlobalEnvVars();
+        envVars.get(0).setValue("99999");
+        envVars.get(1).setValue("rabbitmq2");
+        envVars.get(2).setValue("OPENCL");
+
+        envService.updateGlobalEnvVars(envVars);
+
+        String args = Files.readString(argsFile);
+        assertTrue(args.contains("java-telegram-notifier"));
+        assertTrue(args.contains("java-object-detection"));
+        assertFalse(args.contains("java-rtsp-recorder"));
+
+        String envContent = Files.readString(envFile);
+        assertTrue(envContent.contains("TELEGRAM_CHAT_ID=99999"));
+        assertTrue(envContent.contains("RABBITMQ_HOST=rabbitmq2"));
+        assertTrue(envContent.contains("ACCELERATION_BACKEND=OPENCL"));
+    }
+
+    @Test
+    void updateGlobalEnvVars_secretToggleDoesNotRecreate() throws Exception {
+        Path fakeBin = tempDir.resolve("fakebin");
+        Files.createDirectories(fakeBin);
+        Path argsFile = tempDir.resolve("args.txt");
+        Path fakeScript = fakeBin.resolve("docker-compose");
+        Files.writeString(fakeScript, "#!/bin/bash\necho \"$@\" >> " + argsFile + "\nexit 0\n");
+        fakeScript.toFile().setExecutable(true);
+        properties.setPodmanComposeBinary(fakeScript.toString());
+
+        List<EnvVar> envVars = envService.getGlobalEnvVars();
+        envVars.get(0).setSecret(true);
+
+        envService.updateGlobalEnvVars(envVars);
+
+        String args = Files.exists(argsFile) ? Files.readString(argsFile) : "";
+        assertTrue(args.isEmpty());
+
+        String envContent = Files.readString(envFile);
+        assertTrue(envContent.contains("# secret"));
+        assertTrue(envContent.contains("TELEGRAM_CHAT_ID=12345"));
+    }
+
     private static final String COMPOSE_YAML = """
             version: "3.9"
 

@@ -157,3 +157,39 @@ input[type="checkbox"] {
 .nested .field-row {
   margin-bottom: 4px;
 }
+
+.secret-field-wrapper {
+  flex: 1;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.secret-field-wrapper .field-input {
+  flex: 1;
+}
+
+.eye-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.eye-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.eye-btn svg {
+  display: block;
+}

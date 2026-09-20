@@ -26,4 +26,12 @@ export class ConfigService {
   saveEnv(name: string, envVars: any): Observable<any> {
     return this.http.put<any>(`/api/modules/${name}/env`, envVars);
   }
+
+  getGlobalEnv(): Observable<any> {
+    return this.http.get<any>('/api/env');
+  }
+
+  saveGlobalEnv(envVars: any): Observable<any> {
+    return this.http.put<any>('/api/env', envVars);
+  }
 }

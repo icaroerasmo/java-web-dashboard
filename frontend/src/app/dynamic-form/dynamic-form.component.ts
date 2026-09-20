@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { resolveEnumOptions } from '../services/field-registry';
+import { resolveEnumOptions, resolveSecretField } from '../services/field-registry';
 
 @Component({
   selector: 'app-dynamic-form',
@@ -15,6 +15,8 @@ export class DynamicFormComponent {
   @Input() depth = 0;
   @Input() moduleName = '';
   @Input() parentPath = '';
+
+  revealedFields = new Set<string>();
 
   isObject(value: any): boolean {
     return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -57,6 +59,25 @@ export class DynamicFormComponent {
 
   getArrayItemPath(arrayKey: string): string {
     return `${this.getFieldPath(arrayKey)}[]`;
+  }
+
+  isSecretField(key: string): boolean {
+    const path = this.getFieldPath(key);
+    return resolveSecretField(this.moduleName, path);
+  }
+
+  toggleReveal(key: string): void {
+    const path = this.getFieldPath(key);
+    if (this.revealedFields.has(path)) {
+      this.revealedFields.delete(path);
+    } else {
+      this.revealedFields.add(path);
+    }
+  }
+
+  isRevealed(key: string): boolean {
+    const path = this.getFieldPath(key);
+    return this.revealedFields.has(path);
   }
 
   addArrayItem(key: string): void {

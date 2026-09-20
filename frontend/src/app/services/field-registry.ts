@@ -38,3 +38,33 @@ export function resolveEnumOptions(
   }
   return null;
 }
+
+export const SECRET_REGISTRY: Record<string, string[]> = {
+  'java-telegram-notifier': [
+    'telegram.bot-token',
+    'telegram.chat-id',
+    'rabbitMq.password',
+  ],
+  'java-rtsp-recorder': [
+    'rabbitMq.password',
+    'rtsp.cameras[].url',
+  ],
+  'java-object-detection': [
+    'rabbitMq.password',
+    'object-detection.streams.cameras[].url',
+  ],
+  'java-live-transmission': [
+    'rabbitMq.password',
+    'live.rtsp-url',
+    'live.cameras[].rtsp-url',
+  ],
+};
+
+export function resolveSecretField(
+  moduleName: string,
+  currentPath: string,
+): boolean {
+  const secrets = SECRET_REGISTRY[moduleName];
+  if (!secrets) return false;
+  return secrets.includes(currentPath);
+}

@@ -10,9 +10,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,23 +26,29 @@ public class EnvService {
     private static final Pattern REF_PATTERN = Pattern.compile("^\\$\\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\\}$");
     private static final Pattern ENV_ENTRY_PATTERN = Pattern.compile("^      ([A-Za-z_][A-Za-z0-9_]*):\\s*(.*)$");
     private static final Pattern ENV_FILE_LINE_PATTERN = Pattern.compile("^([A-Za-z_][A-Za-z0-9_]*)=(.*)$");
+    private static final String SECRET_MARKER = "# secret";
 
     private final DashboardProperties properties;
 
     public List<EnvVar> getEnvVars(String moduleName) {
         Path composeFile = Path.of(properties.getComposeFile());
-        Map<String, String> envValues = readEnvFile(Path.of(properties.getEnvFile()));
+        Map<String, EnvVar> envValues = readEnvFile(Path.of(properties.getEnvFile()));
         Map<String, String> serviceEnv = readServiceEnvironment(composeFile, moduleName);
         List<EnvVar> result = new ArrayList<>();
         for (Map.Entry<String, String> entry : serviceEnv.entrySet()) {
             EnvVar envVar = parseEnvEntry(entry.getKey(), entry.getValue());
             if (envVar.getRef() != null) {
-                String resolved = envValues.get(envVar.getRef());
-                envVar.setValue(resolved != null ? resolved : envVar.getDefaultValue());
+                EnvVar stored = envValues.get(envVar.getRef());
+                envVar.setValue(stored != null ? stored.getValue() : envVar.getDefaultValue());
+                envVar.setSecret(stored != null && stored.isSecret());
             }
             result.add(envVar);
         }
         return result;
+    }
+
+    public List<EnvVar> getGlobalEnvVars() {
+        return new ArrayList<>(readEnvFile(Path.of(properties.getEnvFile())).values());
     }
 
     public void updateEnvVars(String moduleName, List<EnvVar> envVars) {
@@ -47,10 +56,46 @@ public class EnvService {
         applyToContainer(moduleName);
     }
 
+    public void updateGlobalEnvVars(List<EnvVar> envVars) {
+        Path envFile = Path.of(properties.getEnvFile());
+        Map<String, EnvVar> current = readEnvFile(envFile);
+
+        Map<String, EnvVar> next = new LinkedHashMap<>();
+        for (EnvVar envVar : envVars) {
+            if (envVar.getKey() == null || envVar.getKey().isBlank()) {
+                continue;
+            }
+            EnvVar stored = new EnvVar();
+            stored.setKey(envVar.getKey());
+            stored.setValue(envVar.getValue() != null ? envVar.getValue() : "");
+            stored.setSecret(envVar.isSecret());
+            next.put(stored.getKey(), stored);
+        }
+
+        Set<String> changedKeys = new HashSet<>();
+        for (Map.Entry<String, EnvVar> entry : next.entrySet()) {
+            EnvVar old = current.get(entry.getKey());
+            if (old == null || !Objects.equals(old.getValue(), entry.getValue().getValue())) {
+                changedKeys.add(entry.getKey());
+            }
+        }
+        for (String key : current.keySet()) {
+            if (!next.containsKey(key)) {
+                changedKeys.add(key);
+            }
+        }
+
+        writeEnvFile(envFile, next);
+
+        for (String service : findServicesReferencing(changedKeys)) {
+            applyToContainer(service);
+        }
+    }
+
     void updateFiles(String moduleName, List<EnvVar> envVars) {
         Path composeFile = Path.of(properties.getComposeFile());
         Path envFile = Path.of(properties.getEnvFile());
-        Map<String, String> envValues = readEnvFile(envFile);
+        Map<String, EnvVar> envValues = readEnvFile(envFile);
         List<String> composeLines = readLines(composeFile);
 
         Map<String, String> currentEnv = readServiceEnvironment(composeFile, moduleName);
@@ -63,9 +108,20 @@ public class EnvService {
             if (isNew) {
                 envVar.setRef(envVar.getKey());
                 envVar.setDefaultValue(null);
-                envValues.put(envVar.getKey(), envVar.getValue() != null ? envVar.getValue() : "");
+                EnvVar stored = new EnvVar();
+                stored.setKey(envVar.getKey());
+                stored.setValue(envVar.getValue() != null ? envVar.getValue() : "");
+                stored.setSecret(envVar.isSecret());
+                envValues.put(envVar.getKey(), stored);
             } else if (envVar.getRef() != null && envVar.getValue() != null) {
-                envValues.put(envVar.getRef(), envVar.getValue());
+                EnvVar stored = envValues.get(envVar.getRef());
+                if (stored == null) {
+                    stored = new EnvVar();
+                    stored.setKey(envVar.getRef());
+                    envValues.put(envVar.getRef(), stored);
+                }
+                stored.setValue(envVar.getValue());
+                stored.setSecret(envVar.isSecret());
             }
         }
 
@@ -96,6 +152,40 @@ public class EnvService {
         }
     }
 
+    private Set<String> findServicesReferencing(Set<String> keys) {
+        if (keys.isEmpty()) {
+            return Set.of();
+        }
+        Path composeFile = Path.of(properties.getComposeFile());
+        List<String> lines = readLines(composeFile);
+        Set<String> result = new HashSet<>();
+        int i = 0;
+        while (i < lines.size()) {
+            String line = lines.get(i);
+            if (line.matches("^  [A-Za-z0-9_-]+:$")) {
+                int serviceStart = i;
+                int serviceEnd = findServiceEnd(lines, serviceStart);
+                int envBlockStart = findEnvironmentBlockStart(lines, serviceStart, serviceEnd);
+                if (envBlockStart >= 0) {
+                    String serviceName = line.trim().substring(0, line.trim().length() - 1);
+                    Map<String, String> env = readServiceEnvironment(lines, serviceStart, serviceEnd, envBlockStart);
+                    for (String rawValue : env.values()) {
+                        for (String key : keys) {
+                            if (rawValue.contains("${" + key + "}") || rawValue.contains("${" + key + ":")) {
+                                result.add(serviceName);
+                                break;
+                            }
+                        }
+                    }
+                }
+                i = serviceEnd + 1;
+            } else {
+                i++;
+            }
+        }
+        return result;
+    }
+
     private Map<String, String> readServiceEnvironment(Path composeFile, String moduleName) {
         List<String> lines = readLines(composeFile);
         int serviceStart = findServiceStart(lines, moduleName);
@@ -104,6 +194,10 @@ public class EnvService {
         }
         int serviceEnd = findServiceEnd(lines, serviceStart);
         int envBlockStart = findEnvironmentBlockStart(lines, serviceStart, serviceEnd);
+        return readServiceEnvironment(lines, serviceStart, serviceEnd, envBlockStart);
+    }
+
+    private Map<String, String> readServiceEnvironment(List<String> lines, int serviceStart, int serviceEnd, int envBlockStart) {
         Map<String, String> result = new LinkedHashMap<>();
         if (envBlockStart < 0) {
             return result;
@@ -207,28 +301,43 @@ public class EnvService {
         return -1;
     }
 
-    private Map<String, String> readEnvFile(Path envFile) {
-        Map<String, String> result = new LinkedHashMap<>();
+    private Map<String, EnvVar> readEnvFile(Path envFile) {
+        Map<String, EnvVar> result = new LinkedHashMap<>();
         if (!Files.exists(envFile)) {
             return result;
         }
+        boolean pendingSecret = false;
         for (String line : readLines(envFile)) {
             String trimmed = line.trim();
-            if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            if (trimmed.startsWith("#")) {
+                if (trimmed.equals(SECRET_MARKER)) {
+                    pendingSecret = true;
+                }
                 continue;
             }
             Matcher matcher = ENV_FILE_LINE_PATTERN.matcher(trimmed);
             if (matcher.matches()) {
-                result.put(matcher.group(1), unquote(matcher.group(2)));
+                EnvVar envVar = new EnvVar();
+                envVar.setKey(matcher.group(1));
+                envVar.setValue(unquote(matcher.group(2)));
+                envVar.setSecret(pendingSecret);
+                result.put(envVar.getKey(), envVar);
             }
+            pendingSecret = false;
         }
         return result;
     }
 
-    private void writeEnvFile(Path envFile, Map<String, String> envValues) {
+    private void writeEnvFile(Path envFile, Map<String, EnvVar> envValues) {
         List<String> lines = new ArrayList<>();
-        for (Map.Entry<String, String> entry : envValues.entrySet()) {
-            lines.add(entry.getKey() + "=" + quote(entry.getValue()));
+        for (EnvVar envVar : envValues.values()) {
+            if (envVar.isSecret()) {
+                lines.add(SECRET_MARKER);
+            }
+            lines.add(envVar.getKey() + "=" + quote(envVar.getValue()));
         }
         writeLines(envFile, lines);
     }
