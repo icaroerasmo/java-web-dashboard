@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './menu.component.css'
 })
 export class MenuComponent {
+  @Input() open = false;
   @Output() openConfigs = new EventEmitter<void>();
   @Output() close = new EventEmitter<void>();
 
@@ -17,7 +18,7 @@ export class MenuComponent {
     this.close.emit();
   }
 
-  onClose(): void {
+  onOverlayClick(): void {
     this.close.emit();
   }
 }

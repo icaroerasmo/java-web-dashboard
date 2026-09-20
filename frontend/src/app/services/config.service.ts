@@ -14,4 +14,8 @@ export class ConfigService {
   saveConfig(name: string, config: any): Observable<any> {
     return this.http.put<any>(`/api/modules/${name}/config`, config);
   }
+
+  restartModule(name: string): Observable<any> {
+    return this.http.post<any>(`/api/modules/${name}/restart`, {});
+  }
 }

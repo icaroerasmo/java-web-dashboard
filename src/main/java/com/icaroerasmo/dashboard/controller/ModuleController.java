@@ -5,6 +5,7 @@ import com.icaroerasmo.dashboard.service.ModuleHealthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +57,30 @@ public class ModuleController {
             return ResponseEntity.notFound().build();
         }
         try {
+            return restClient.put()
+                    .uri(baseUrl + "/api/config")
+                    .body(config)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (Exception e) {
+            return ResponseEntity.status(502).build();
+        }
+    }
+
+    @PostMapping("/modules/{name}/restart")
+    public ResponseEntity<?> restartModule(@PathVariable String name) {
+        String baseUrl = findBaseUrl(name);
+        if (baseUrl == null) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            Map<String, Object> config = restClient.get()
+                    .uri(baseUrl + "/api/config")
+                    .retrieve()
+                    .body(Map.class);
+            if (config == null) {
+                return ResponseEntity.status(502).build();
+            }
             return restClient.put()
                     .uri(baseUrl + "/api/config")
                     .body(config)

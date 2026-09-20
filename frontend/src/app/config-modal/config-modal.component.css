@@ -137,12 +137,14 @@
   border-radius: 3px;
 }
 
-/* Save */
+/* Save & Restart row */
 .save-row {
   padding: 12px 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 10px;
   flex-shrink: 0;
 }
 
@@ -169,6 +171,33 @@
 
 .saved-ok {
   color: #22c55e;
+}
+
+.restart-btn {
+  padding: 8px 24px;
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: 6px;
+  color: #eab308;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.restart-btn:hover:not(:disabled) {
+  background: rgba(234, 179, 8, 0.25);
+}
+
+.restart-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.restart-status {
+  color: rgba(234, 179, 8, 0.8);
+  font-size: 12px;
+  margin-right: auto;
 }
 
 .loading-state, .empty-state {

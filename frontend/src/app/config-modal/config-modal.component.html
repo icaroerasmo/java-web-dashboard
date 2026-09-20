@@ -34,10 +34,19 @@
           }
           @if (selectedTab && configs[selectedTab]) {
             <div class="config-scroll">
-              <app-dynamic-form [config]="configs[selectedTab]" />
+              <app-dynamic-form
+                [config]="configs[selectedTab]"
+                [moduleName]="selectedTab"
+              />
             </div>
             <div class="save-row">
-              <button class="save-btn" (click)="save()" [disabled]="saving">
+              @if (restartMessage) {
+                <span class="restart-status">{{ restartMessage }}</span>
+              }
+              <button class="restart-btn" (click)="restart()" [disabled]="restarting || saving">
+                Restart
+              </button>
+              <button class="save-btn" (click)="save()" [disabled]="saving || restarting">
                 @if (saving) {
                   Saving...
                 } @else if (savedMessage) {

@@ -3,32 +3,57 @@
     @if (isObject(config[key])) {
       <div class="section-block">
         <h4 class="section-label">{{ key }}</h4>
-        <app-dynamic-form [config]="config[key]" [depth]="depth + 1" />
+        <app-dynamic-form
+          [config]="config[key]"
+          [depth]="depth + 1"
+          [moduleName]="moduleName"
+          [parentPath]="getFieldPath(key)"
+        />
       </div>
     } @else if (isArray(config[key])) {
       <div class="section-block">
-        <h4 class="section-label">{{ key }}</h4>
-        @for (item of config[key]; track $index) {
+        <div class="section-header">
+          <h4 class="section-label">{{ key }}</h4>
+          <button class="add-btn" (click)="addArrayItem(key)">+ Add</button>
+        </div>
+        @for (item of config[key]; track trackByIndex($index)) {
           @if (isObject(item)) {
             <div class="array-item">
-              <span class="array-index">[{{ $index }}]</span>
-              <app-dynamic-form [config]="item" [depth]="depth + 1" />
+              <div class="array-item-header">
+                <span class="array-index">[{{ $index }}]</span>
+                <button class="remove-btn" (click)="removeArrayItem(key, $index)">Remove</button>
+              </div>
+              <app-dynamic-form
+                [config]="item"
+                [depth]="depth + 1"
+                [moduleName]="moduleName"
+                [parentPath]="getArrayItemPath(key)"
+              />
             </div>
           } @else if (isBoolean(item)) {
             <div class="array-item">
-              <span class="array-index">[{{ $index }}]</span>
+              <div class="array-item-header">
+                <span class="array-index">[{{ $index }}]</span>
+                <button class="remove-btn" (click)="removeArrayItem(key, $index)">Remove</button>
+              </div>
               <label class="field-label">{{ $index }}</label>
               <input type="checkbox" [(ngModel)]="config[key][$index]" />
             </div>
           } @else if (isNumber(item)) {
             <div class="array-item">
-              <span class="array-index">[{{ $index }}]</span>
+              <div class="array-item-header">
+                <span class="array-index">[{{ $index }}]</span>
+                <button class="remove-btn" (click)="removeArrayItem(key, $index)">Remove</button>
+              </div>
               <label class="field-label">{{ $index }}</label>
               <input type="number" [(ngModel)]="config[key][$index]" class="field-input" />
             </div>
           } @else {
             <div class="array-item">
-              <span class="array-index">[{{ $index }}]</span>
+              <div class="array-item-header">
+                <span class="array-index">[{{ $index }}]</span>
+                <button class="remove-btn" (click)="removeArrayItem(key, $index)">Remove</button>
+              </div>
               <label class="field-label">{{ $index }}</label>
               <input type="text" [(ngModel)]="config[key][$index]" class="field-input" />
             </div>
@@ -43,12 +68,28 @@
     } @else if (isNumber(config[key])) {
       <div class="field-row">
         <label class="field-label">{{ key }}</label>
-        <input type="number" [(ngModel)]="config[key]" class="field-input" />
+        @if (getEnumOptions(key); as options) {
+          <select [(ngModel)]="config[key]" class="field-select">
+            @for (opt of options; track opt) {
+              <option [value]="opt">{{ opt }}</option>
+            }
+          </select>
+        } @else {
+          <input type="number" [(ngModel)]="config[key]" class="field-input" />
+        }
       </div>
     } @else if (isString(config[key])) {
       <div class="field-row">
         <label class="field-label">{{ key }}</label>
-        <input type="text" [(ngModel)]="config[key]" class="field-input" />
+        @if (getEnumOptions(key); as options) {
+          <select [(ngModel)]="config[key]" class="field-select">
+            @for (opt of options; track opt) {
+              <option [value]="opt">{{ opt }}</option>
+            }
+          </select>
+        } @else {
+          <input type="text" [(ngModel)]="config[key]" class="field-input" />
+        }
       </div>
     }
   </div>

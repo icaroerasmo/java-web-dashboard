@@ -21,6 +21,8 @@ export class ConfigModalComponent implements OnChanges {
   loading: Record<string, boolean> = {};
   saving = false;
   savedMessage = '';
+  restarting = false;
+  restartMessage = '';
 
   constructor(
     private modulesService: ModulesService,
@@ -75,6 +77,27 @@ export class ConfigModalComponent implements OnChanges {
       },
       error: () => {
         this.saving = false;
+      }
+    });
+  }
+
+  restart(): void {
+    if (!this.selectedTab) return;
+    if (!confirm(`Restart ${this.selectedTab}? The module will be unavailable for ~15 seconds.`)) {
+      return;
+    }
+    this.restarting = true;
+    this.restartMessage = 'Restarting...';
+    this.configService.restartModule(this.selectedTab).subscribe({
+      next: () => {
+        setTimeout(() => {
+          this.restarting = false;
+          this.restartMessage = '';
+        }, 15000);
+      },
+      error: () => {
+        this.restarting = false;
+        this.restartMessage = '';
       }
     });
   }

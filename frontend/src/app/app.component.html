@@ -10,8 +10,7 @@
 
 <!-- Menu -->
 <app-menu
-  [class.visible]="menuOpen"
-  [style.transform]="menuOpen ? 'translateX(0)' : 'translateX(-100%)'"
+  [open]="menuOpen"
   (openConfigs)="openConfigs()"
   (close)="closeMenu()"
 />
