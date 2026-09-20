@@ -15,7 +15,7 @@ public class DashboardProperties {
     private Go2Rtc go2rtc = new Go2Rtc();
     private String composeFile = "/cafofo/compose.yaml";
     private String envFile = "/cafofo/.env";
-    private String podmanComposeBinary = "podman-compose";
+    private String podmanComposeBinary = "docker-compose";
 
     @Data
     public static class Module {
