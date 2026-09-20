@@ -120,7 +120,10 @@
             </div>
             <div class="save-row">
               @if (restartMessage) {
-                <span class="restart-status">{{ restartMessage }}</span>
+                @if (restarting) {
+                  <span class="spinner"></span>
+                }
+                <span class="restart-status" [class.error]="restartError">{{ restartMessage }}</span>
               }
               <button class="restart-btn" (click)="restart()" [disabled]="restarting || saving">
                 Restart

@@ -24,6 +24,7 @@ export class ConfigModalComponent implements OnChanges {
   savedMessage = '';
   restarting = false;
   restartMessage = '';
+  restartError = false;
 
   envVars: { key: string; value: string; secret: boolean }[] = [];
   envLoading = false;
@@ -154,7 +155,8 @@ export class ConfigModalComponent implements OnChanges {
       return;
     }
     this.restarting = true;
-    this.restartMessage = 'Restarting...';
+    this.restartError = false;
+    this.restartMessage = `Application ${this.selectedTab} is restarting`;
     this.configService.restartModule(this.selectedTab).subscribe({
       next: () => {
         setTimeout(() => {
@@ -164,7 +166,12 @@ export class ConfigModalComponent implements OnChanges {
       },
       error: () => {
         this.restarting = false;
-        this.restartMessage = '';
+        this.restartError = true;
+        this.restartMessage = 'Restart failed';
+        setTimeout(() => {
+          this.restartError = false;
+          this.restartMessage = '';
+        }, 5000);
       }
     });
   }
