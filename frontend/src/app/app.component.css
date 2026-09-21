@@ -47,7 +47,7 @@
 }
 
 .hamburger.open {
-  transform: translateX(280px);
+  transform: translateX(204px);
 }
 
 .hamburger:hover {
