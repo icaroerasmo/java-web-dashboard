@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriUtils;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -43,7 +44,7 @@ public class RabbitMqController {
     public ResponseEntity<?> getQueues() {
         try {
             List<Map> queues = restClient.get()
-                    .uri(managementUrl() + "/api/queues")
+                    .uri(URI.create(managementUrl() + "/api/queues"))
                     .headers(headers -> setAuth(headers))
                     .retrieve()
                     .body(List.class);
@@ -73,7 +74,7 @@ public class RabbitMqController {
                     "ackmode", "ack_requeue_true",
                     "encoding", "auto");
             return restClient.post()
-                    .uri(managementUrl() + "/api/queues/" + VHOST + "/" + encode(queue) + "/get")
+                    .uri(URI.create(managementUrl() + "/api/queues/" + VHOST + "/" + encode(queue) + "/get"))
                     .headers(headers -> setAuth(headers))
                     .body(body)
                     .retrieve()
@@ -92,7 +93,7 @@ public class RabbitMqController {
                     "payload", request.getOrDefault("payload", ""),
                     "payload_encoding", "string");
             return restClient.post()
-                    .uri(managementUrl() + "/api/exchanges/" + VHOST + "/amq.default/publish")
+                    .uri(URI.create(managementUrl() + "/api/exchanges/" + VHOST + "/amq.default/publish"))
                     .headers(headers -> setAuth(headers))
                     .body(body)
                     .retrieve()
@@ -110,15 +111,15 @@ public class RabbitMqController {
                         "count", count,
                         "ackmode", "ack_requeue_false",
                         "encoding", "auto");
-                return restClient.post()
-                        .uri(managementUrl() + "/api/queues/" + VHOST + "/" + encode(queue) + "/get")
-                        .headers(headers -> setAuth(headers))
-                        .body(body)
-                        .retrieve()
-                        .toEntity(List.class);
+return restClient.post()
+                    .uri(URI.create(managementUrl() + "/api/queues/" + VHOST + "/" + encode(queue) + "/get"))
+                    .headers(headers -> setAuth(headers))
+                    .body(body)
+                    .retrieve()
+                    .toEntity(List.class);
             }
             return restClient.delete()
-                    .uri(managementUrl() + "/api/queues/" + VHOST + "/" + encode(queue) + "/contents")
+                    .uri(URI.create(managementUrl() + "/api/queues/" + VHOST + "/" + encode(queue) + "/contents"))
                     .headers(headers -> setAuth(headers))
                     .retrieve()
                     .toBodilessEntity();
