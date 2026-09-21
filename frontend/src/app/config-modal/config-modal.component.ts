@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfigService } from '../services/config.service';
@@ -12,7 +12,7 @@ import { DynamicFormComponent } from '../dynamic-form/dynamic-form.component';
   templateUrl: './config-modal.component.html',
   styleUrl: './config-modal.component.css'
 })
-export class ConfigModalComponent implements OnChanges {
+export class ConfigModalComponent implements OnChanges, OnDestroy {
   @Input() open = false;
   @Output() close = new EventEmitter<void>();
 
@@ -32,15 +32,36 @@ export class ConfigModalComponent implements OnChanges {
   envMessage = '';
   revealedSecrets = new Set<number>();
 
+  queues: any[] = [];
+  queuesLoading = false;
+  selectedQueue: string | null = null;
+  messages: any[] = [];
+  messagesLoading = false;
+  viewCount = 10;
+  messagePayload = '';
+  mqSending = false;
+  mqMessage = '';
+
+  private pollTimer: any = null;
+
   constructor(
     private modulesService: ModulesService,
     private configService: ConfigService
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['open'] && this.open) {
-      this.loadModules();
+    if (changes['open']) {
+      if (this.open) {
+        this.loadModules();
+        this.startPolling();
+      } else {
+        this.stopPolling();
+      }
     }
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
   }
 
   get liveJavaModules(): ModuleInfo[] {
@@ -49,6 +70,26 @@ export class ConfigModalComponent implements OnChanges {
 
   get isEnvironmentTab(): boolean {
     return this.selectedTab === '__environment__';
+  }
+
+  get isRabbitMqTab(): boolean {
+    return this.selectedTab === 'rabbitmq';
+  }
+
+  get isGo2RtcTab(): boolean {
+    return this.selectedTab === 'go2rtc';
+  }
+
+  private startPolling(): void {
+    this.stopPolling();
+    this.pollTimer = setInterval(() => this.loadModules(), 5000);
+  }
+
+  private stopPolling(): void {
+    if (this.pollTimer) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = null;
+    }
   }
 
   loadModules(): void {
@@ -67,6 +108,23 @@ export class ConfigModalComponent implements OnChanges {
     if (name === '__environment__') {
       if (this.envVars.length === 0 && !this.envLoading) {
         this.loadGlobalEnv();
+      }
+    } else if (name === 'go2rtc') {
+      if (!this.configs['go2rtc'] && !this.loading['go2rtc']) {
+        this.loading['go2rtc'] = true;
+        this.configService.getGo2RtcConfig().subscribe({
+          next: (config) => {
+            this.configs['go2rtc'] = config;
+            this.loading['go2rtc'] = false;
+          },
+          error: () => {
+            this.loading['go2rtc'] = false;
+          }
+        });
+      }
+    } else if (name === 'rabbitmq') {
+      if (this.queues.length === 0 && !this.queuesLoading) {
+        this.loadQueues();
       }
     } else if (!this.configs[name]) {
       this.loading[name] = true;
@@ -137,7 +195,10 @@ export class ConfigModalComponent implements OnChanges {
   save(): void {
     if (!this.selectedTab || !this.configs[this.selectedTab]) return;
     this.saving = true;
-    this.configService.saveConfig(this.selectedTab, this.configs[this.selectedTab]).subscribe({
+    const request = this.isGo2RtcTab
+      ? this.configService.saveGo2RtcConfig(this.configs[this.selectedTab])
+      : this.configService.saveConfig(this.selectedTab, this.configs[this.selectedTab]);
+    request.subscribe({
       next: () => {
         this.saving = false;
         this.savedMessage = 'Saved';
@@ -157,7 +218,12 @@ export class ConfigModalComponent implements OnChanges {
     this.restarting = true;
     this.restartError = false;
     this.restartMessage = `Application ${this.selectedTab} is restarting`;
-    this.configService.restartModule(this.selectedTab).subscribe({
+    const request = this.isGo2RtcTab
+      ? this.configService.restartGo2Rtc()
+      : this.isRabbitMqTab
+        ? this.configService.restartRabbitMq()
+        : this.configService.restartModule(this.selectedTab);
+    request.subscribe({
       next: () => {
         setTimeout(() => {
           this.restarting = false;
@@ -172,6 +238,91 @@ export class ConfigModalComponent implements OnChanges {
           this.restartError = false;
           this.restartMessage = '';
         }, 5000);
+      }
+    });
+  }
+
+  loadQueues(): void {
+    this.queuesLoading = true;
+    this.configService.getRabbitMqQueues().subscribe({
+      next: (queues) => {
+        this.queues = queues;
+        this.queuesLoading = false;
+        if (this.selectedQueue && !queues.some((q: any) => q.name === this.selectedQueue)) {
+          this.selectedQueue = null;
+          this.messages = [];
+        }
+      },
+      error: () => {
+        this.queues = [];
+        this.queuesLoading = false;
+      }
+    });
+  }
+
+  selectQueue(name: string): void {
+    this.selectedQueue = name;
+    this.messages = [];
+  }
+
+  messageId(msg: any): string {
+    return msg?.properties?.message_id || 'no id';
+  }
+
+  viewMessages(): void {
+    if (!this.selectedQueue) return;
+    this.messagesLoading = true;
+    this.configService.getRabbitMqMessages(this.selectedQueue, this.viewCount).subscribe({
+      next: (messages) => {
+        this.messages = messages;
+        this.messagesLoading = false;
+      },
+      error: () => {
+        this.messages = [];
+        this.messagesLoading = false;
+      }
+    });
+  }
+
+  sendMessage(): void {
+    if (!this.selectedQueue) return;
+    this.mqSending = true;
+    this.mqMessage = '';
+    this.configService.sendRabbitMqMessage(this.selectedQueue, this.messagePayload).subscribe({
+      next: () => {
+        this.mqSending = false;
+        this.messagePayload = '';
+        this.mqMessage = 'Sent';
+        this.loadQueues();
+        setTimeout(() => this.mqMessage = '', 2000);
+      },
+      error: () => {
+        this.mqSending = false;
+        this.mqMessage = 'Error sending';
+        setTimeout(() => this.mqMessage = '', 3000);
+      }
+    });
+  }
+
+  removeOneMessage(): void {
+    if (!this.selectedQueue) return;
+    this.configService.removeRabbitMqMessages(this.selectedQueue, 1).subscribe({
+      next: () => {
+        this.messages = [];
+        this.loadQueues();
+      }
+    });
+  }
+
+  removeAllMessages(): void {
+    if (!this.selectedQueue) return;
+    if (!confirm(`Remove ALL messages from queue "${this.selectedQueue}"?`)) {
+      return;
+    }
+    this.configService.removeRabbitMqMessages(this.selectedQueue).subscribe({
+      next: () => {
+        this.messages = [];
+        this.loadQueues();
       }
     });
   }
