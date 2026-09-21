@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: 999;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--overlay);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -19,7 +19,7 @@
   left: 0;
   height: 100%;
   width: 280px;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--surface-strong);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 24px;
@@ -50,7 +50,7 @@
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   font-size: 15px;
   text-align: left;
   cursor: pointer;
@@ -58,5 +58,5 @@
 }
 
 .menu-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--surface-hover);
 }
