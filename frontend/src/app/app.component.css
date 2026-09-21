@@ -43,7 +43,11 @@
   justify-content: center;
   gap: 4px;
   padding: 10px;
-  transition: background 0.2s;
+  transition: transform 0.3s ease, background 0.2s;
+}
+
+.hamburger.open {
+  transform: translateX(280px);
 }
 
 .hamburger:hover {
