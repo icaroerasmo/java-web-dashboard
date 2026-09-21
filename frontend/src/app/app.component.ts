@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, HostBinding } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MenuComponent } from './menu/menu.component';
 import { ConfigModalComponent } from './config-modal/config-modal.component';
@@ -26,16 +26,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   private player: VideoRTC | null = null;
 
-  @HostBinding('class.light')
-  get isLightTheme(): boolean {
-    return this.theme === 'light';
-  }
-
   constructor() {
     const saved = localStorage.getItem('dashboard-theme');
     if (saved === 'light') {
       this.theme = 'light';
     }
+    this.applyTheme();
+  }
+
+  private applyTheme(): void {
+    document.documentElement.classList.toggle('light', this.theme === 'light');
   }
 
   ngAfterViewInit(): void {
@@ -79,5 +79,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   toggleTheme(): void {
     this.theme = this.theme === 'dark' ? 'light' : 'dark';
     localStorage.setItem('dashboard-theme', this.theme);
+    this.applyTheme();
   }
 }
