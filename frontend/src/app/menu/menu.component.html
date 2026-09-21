@@ -1,6 +1,5 @@
-@if (open) {
-  <div class="menu-overlay" (click)="onOverlayClick()">
-    <nav class="menu-panel" (click)="$event.stopPropagation()">
+<div class="menu-overlay" [class.open]="open" (click)="onOverlayClick()">
+    <nav class="menu-panel" [class.open]="open" (click)="$event.stopPropagation()">
       <div class="menu-items">
         <button class="menu-item" (click)="onOpenConfigs()">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -12,4 +11,3 @@
       </div>
     </nav>
   </div>
-}
