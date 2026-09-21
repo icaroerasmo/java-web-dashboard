@@ -599,6 +599,14 @@
   text-align: center;
 }
 
+.mq-info {
+  color: #f59e0b;
+  font-size: 13px;
+  padding: 12px;
+  text-align: center;
+  line-height: 1.5;
+}
+
 .field-row {
   display: flex;
   align-items: center;

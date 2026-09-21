@@ -42,6 +42,7 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
   messagePayload = '';
   mqSending = false;
   mqMessage = '';
+  mqInfoMessage = '';
 
   go2rtcStreams: { name: string; url: string }[] = [];
   go2rtcOriginalNames: string[] = [];
@@ -262,6 +263,7 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
   selectQueue(name: string): void {
     this.selectedQueue = name;
     this.messages = [];
+    this.mqInfoMessage = '';
   }
 
   messageId(msg: any): string {
@@ -271,10 +273,21 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
   viewMessages(): void {
     if (!this.selectedQueue) return;
     this.messagesLoading = true;
+    this.mqInfoMessage = '';
     this.configService.getRabbitMqMessages(this.selectedQueue, this.viewCount).subscribe({
       next: (messages) => {
         this.messages = messages;
         this.messagesLoading = false;
+        if (messages.length === 0) {
+          const queue = this.queues.find((q: any) => q.name === this.selectedQueue);
+          const unack = queue?.messages_unacknowledged ?? 0;
+          const ready = queue?.messages_ready ?? 0;
+          if (unack > 0) {
+            this.mqInfoMessage = `${unack} message(s) are being processed by consumers (unacknowledged). They will appear here once acknowledged or requeued.`;
+          } else if (ready === 0) {
+            this.mqInfoMessage = 'No messages in queue.';
+          }
+        }
       },
       error: () => {
         this.messages = [];
@@ -308,6 +321,7 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
     this.configService.removeRabbitMqMessages(this.selectedQueue, 1).subscribe({
       next: () => {
         this.messages = [];
+        this.mqInfoMessage = '';
         this.loadQueues();
       }
     });
@@ -321,6 +335,7 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
     this.configService.removeRabbitMqMessages(this.selectedQueue).subscribe({
       next: () => {
         this.messages = [];
+        this.mqInfoMessage = '';
         this.loadQueues();
       }
     });

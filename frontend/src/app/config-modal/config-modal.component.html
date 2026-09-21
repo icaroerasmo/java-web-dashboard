@@ -180,7 +180,11 @@
                         </div>
                       }
                       @if (!messagesLoading && messages.length === 0) {
-                        <div class="mq-empty">No messages to show</div>
+                        @if (mqInfoMessage) {
+                          <div class="mq-info">{{ mqInfoMessage }}</div>
+                        } @else {
+                          <div class="mq-empty">No messages to show</div>
+                        }
                       }
                     </div>
                   } @else {
