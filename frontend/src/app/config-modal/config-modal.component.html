@@ -23,6 +23,18 @@
         }
         <button
           class="tab-btn"
+          [class.active]="selectedTab === 'go2rtc'"
+          (click)="selectTab('go2rtc')">
+          go2rtc
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="selectedTab === 'rabbitmq'"
+          (click)="selectTab('rabbitmq')">
+          rabbitmq
+        </button>
+        <button
+          class="tab-btn"
           [class.active]="selectedTab === '__environment__'"
           (click)="selectTab('__environment__')">
           Environment
@@ -102,6 +114,90 @@
                 } @else {
                   Apply & Restart
                 }
+              </button>
+            </div>
+          }
+        </div>
+      } @else if (isRabbitMqTab) {
+        <div class="tab-content">
+          @if (queuesLoading) {
+            <div class="loading-state">Loading queues...</div>
+          }
+          @if (!queuesLoading) {
+            <div class="mq-scroll">
+              <div class="mq-layout">
+                <div class="mq-queues">
+                  <h4 class="section-label">Queues</h4>
+                  @for (q of queues; track q.name) {
+                    <button
+                      class="queue-item"
+                      [class.active]="selectedQueue === q.name"
+                      (click)="selectQueue(q.name)">
+                      <span class="queue-name">{{ q.name }}</span>
+                      <span class="queue-badge">{{ q.messages }}</span>
+                    </button>
+                  }
+                  @if (queues.length === 0) {
+                    <div class="mq-empty">No queues</div>
+                  }
+                </div>
+                <div class="mq-panel">
+                  @if (selectedQueue) {
+                    <div class="mq-actions">
+                      <div class="mq-row">
+                        <label class="field-label">View</label>
+                        <input type="number" [(ngModel)]="viewCount" class="field-input mq-count" min="1" />
+                        <button class="save-btn" (click)="viewMessages()" [disabled]="messagesLoading">
+                          {{ messagesLoading ? 'Loading...' : 'View messages' }}
+                        </button>
+                      </div>
+                      <div class="mq-row">
+                        <label class="field-label">Send</label>
+                        <textarea [(ngModel)]="messagePayload" class="mq-textarea" placeholder="Message payload"></textarea>
+                        <button class="save-btn" (click)="sendMessage()" [disabled]="mqSending">
+                          {{ mqSending ? 'Sending...' : 'Send' }}
+                        </button>
+                      </div>
+                      <div class="mq-row">
+                        <button class="remove-btn" (click)="removeOneMessage()">Remove 1</button>
+                        <button class="remove-btn" (click)="removeAllMessages()">Remove all</button>
+                        @if (mqMessage) {
+                          <span class="restart-status">{{ mqMessage }}</span>
+                        }
+                      </div>
+                    </div>
+                    <div class="messages-list">
+                      @if (messagesLoading) {
+                        <div class="loading-state">Loading messages...</div>
+                      }
+                      @for (msg of messages; track $index) {
+                        <div class="message-item">
+                          <div class="message-header">
+                            <span class="message-index">#{{ $index + 1 }}</span>
+                            <span class="message-meta">{{ messageId(msg) }}</span>
+                          </div>
+                          <pre class="message-payload">{{ msg.payload }}</pre>
+                        </div>
+                      }
+                      @if (!messagesLoading && messages.length === 0) {
+                        <div class="mq-empty">No messages to show</div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="mq-empty">Select a queue</div>
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="save-row">
+              @if (restartMessage) {
+                @if (restarting) {
+                  <span class="spinner"></span>
+                }
+                <span class="restart-status" [class.error]="restartError">{{ restartMessage }}</span>
+              }
+              <button class="restart-btn" (click)="restart()" [disabled]="restarting">
+                Restart
               </button>
             </div>
           }

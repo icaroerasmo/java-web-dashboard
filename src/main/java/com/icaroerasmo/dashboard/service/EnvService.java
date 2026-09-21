@@ -152,6 +152,29 @@ public class EnvService {
         }
     }
 
+    public void restartService(String serviceName) {
+        Path composeFile = Path.of(properties.getComposeFile());
+        Path composeDir = composeFile.getParent();
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    properties.getPodmanComposeBinary(), "-f", composeFile.toString(),
+                    "restart", serviceName);
+            pb.directory(composeDir.toFile());
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new IllegalStateException("podman compose restart failed (exit " + exitCode + "): " + output);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to run podman compose restart: " + e.getMessage(), e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while running podman compose restart", e);
+        }
+    }
+
     private Set<String> findServicesReferencing(Set<String> keys) {
         if (keys.isEmpty()) {
             return Set.of();

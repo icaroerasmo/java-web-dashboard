@@ -144,6 +144,25 @@ class EnvServiceTest {
     }
 
     @Test
+    void restartService_runsPodmanComposeRestart() throws Exception {
+        Path fakeBin = tempDir.resolve("fakebin");
+        Files.createDirectories(fakeBin);
+        Path argsFile = tempDir.resolve("args.txt");
+        Path fakeScript = fakeBin.resolve("docker-compose");
+        Files.writeString(fakeScript, "#!/bin/bash\necho \"$@\" > " + argsFile + "\nexit 0\n");
+        fakeScript.toFile().setExecutable(true);
+        properties.setPodmanComposeBinary(fakeScript.toString());
+
+        envService.restartService("go2rtc");
+
+        String args = Files.readString(argsFile);
+        assertTrue(args.contains("-f"));
+        assertTrue(args.contains(composeFile.toString()));
+        assertTrue(args.contains("restart"));
+        assertTrue(args.contains("go2rtc"));
+    }
+
+    @Test
     void getEnvVars_unknownServiceThrows() {
         assertThrows(IllegalArgumentException.class, () -> envService.getEnvVars("unknown-service"));
     }
