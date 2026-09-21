@@ -53,10 +53,10 @@ public class RabbitMqController {
                 for (Map queue : queues) {
                     Map<String, Object> item = new LinkedHashMap<>();
                     item.put("name", queue.get("name"));
-                    item.put("messages", queue.get("messages"));
-                    item.put("messages_ready", queue.get("messages_ready"));
-                    item.put("messages_unacknowledged", queue.get("messages_unacknowledged"));
-                    item.put("consumers", queue.get("consumers"));
+                    item.put("messages", numberOrZero(queue.get("messages")));
+                    item.put("messages_ready", numberOrZero(queue.get("messages_ready")));
+                    item.put("messages_unacknowledged", numberOrZero(queue.get("messages_unacknowledged")));
+                    item.put("consumers", numberOrZero(queue.get("consumers")));
                     result.add(item);
                 }
             }
@@ -140,6 +140,10 @@ return restClient.post()
 
     private String managementUrl() {
         return properties.getRabbitmq().getManagementUrl();
+    }
+
+    private Object numberOrZero(Object value) {
+        return value != null ? value : 0;
     }
 
     private void setAuth(org.springframework.http.HttpHeaders headers) {
