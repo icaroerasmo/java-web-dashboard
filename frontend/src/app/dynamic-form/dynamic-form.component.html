@@ -65,7 +65,7 @@
         <label class="field-label">{{ key }}</label>
         <input type="checkbox" [(ngModel)]="config[key]" />
       </div>
-    } @else if (isNumber(config[key])) {
+    } @else if (isNumber(config[key]) || isNumberField(key)) {
       <div class="field-row">
         <label class="field-label">{{ key }}</label>
         @if (getEnumOptions(key); as options) {
@@ -78,7 +78,7 @@
           <input type="number" [(ngModel)]="config[key]" class="field-input" />
         }
       </div>
-    } @else if (isString(config[key])) {
+    } @else if (isString(config[key]) || config[key] === null || config[key] === undefined) {
       <div class="field-row">
         <label class="field-label">{{ key }}</label>
         @if (getEnumOptions(key); as options) {
