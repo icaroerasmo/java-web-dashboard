@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { resolveEnumOptions, resolveSecretField } from '../services/field-registry';
@@ -10,13 +10,41 @@ import { resolveEnumOptions, resolveSecretField } from '../services/field-regist
   templateUrl: './dynamic-form.component.html',
   styleUrl: './dynamic-form.component.css'
 })
-export class DynamicFormComponent {
+export class DynamicFormComponent implements OnInit {
   @Input({ required: true }) config: any = {};
   @Input() depth = 0;
   @Input() moduleName = '';
   @Input() parentPath = '';
 
   revealedFields = new Set<string>();
+  private numberFields = new Set<string>();
+
+  ngOnInit(): void {
+    this.captureNumberFields(this.config, this.parentPath);
+  }
+
+  private captureNumberFields(obj: any, path: string): void {
+    if (!obj || typeof obj !== 'object') return;
+    for (const key of Object.keys(obj)) {
+      const value = obj[key];
+      const fieldPath = path ? `${path}.${key}` : key;
+      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+        this.captureNumberFields(value, fieldPath);
+      } else if (Array.isArray(value)) {
+        for (const item of value) {
+          if (item && typeof item === 'object') {
+            this.captureNumberFields(item, `${fieldPath}[]`);
+          }
+        }
+      } else if (typeof value === 'number') {
+        this.numberFields.add(fieldPath);
+      }
+    }
+  }
+
+  isNumberField(key: string): boolean {
+    return this.numberFields.has(this.getFieldPath(key));
+  }
 
   isObject(value: any): boolean {
     return value !== null && typeof value === 'object' && !Array.isArray(value);
