@@ -35,12 +35,16 @@ export class ConfigService {
     return this.http.put<any>('/api/env', envVars);
   }
 
-  getGo2RtcConfig(): Observable<any> {
-    return this.http.get<any>('/api/go2rtc/config');
+  getGo2RtcStreams(): Observable<any> {
+    return this.http.get<any>('/api/go2rtc/streams');
   }
 
-  saveGo2RtcConfig(config: any): Observable<any> {
-    return this.http.put<any>('/api/go2rtc/config', config);
+  saveGo2RtcStream(name: string, url: string): Observable<any> {
+    return this.http.put<any>('/api/go2rtc/streams', { name, url });
+  }
+
+  removeGo2RtcStream(name: string): Observable<any> {
+    return this.http.delete<any>(`/api/go2rtc/streams/${encodeURIComponent(name)}`);
   }
 
   restartGo2Rtc(): Observable<any> {

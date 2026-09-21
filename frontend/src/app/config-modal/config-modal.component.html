@@ -202,6 +202,61 @@
             </div>
           }
         </div>
+      } @else if (isGo2RtcTab) {
+        <div class="tab-content">
+          @if (go2rtcLoading) {
+            <div class="loading-state">Loading streams...</div>
+          }
+          @if (!go2rtcLoading) {
+            <div class="config-scroll">
+              <div class="section-block">
+                <div class="section-header">
+                  <h4 class="section-label">Streams</h4>
+                  <button class="add-btn" (click)="addGo2RtcStream()">+ Add</button>
+                </div>
+                @for (stream of go2rtcStreams; track $index) {
+                  <div class="array-item">
+                    <div class="array-item-header">
+                      <span class="array-index">[{{ $index }}]</span>
+                      <button class="remove-btn" (click)="removeGo2RtcStream($index)">Remove</button>
+                    </div>
+                    <div class="field-row">
+                      <label class="field-label">name</label>
+                      <input type="text" [(ngModel)]="stream.name" class="field-input" placeholder="stream name" />
+                    </div>
+                    <div class="field-row">
+                      <label class="field-label">url</label>
+                      <input type="text" [(ngModel)]="stream.url" class="field-input" placeholder="rtsp://..." />
+                    </div>
+                  </div>
+                }
+                @if (go2rtcStreams.length === 0) {
+                  <div class="mq-empty">No streams</div>
+                }
+              </div>
+            </div>
+            <div class="save-row">
+              @if (restartMessage) {
+                @if (restarting) {
+                  <span class="spinner"></span>
+                }
+                <span class="restart-status" [class.error]="restartError">{{ restartMessage }}</span>
+              }
+              <button class="restart-btn" (click)="restart()" [disabled]="restarting || go2rtcSaving">
+                Restart
+              </button>
+              <button class="save-btn" (click)="save()" [disabled]="go2rtcSaving || restarting">
+                @if (go2rtcSaving) {
+                  Saving...
+                } @else if (savedMessage) {
+                  <span class="saved-ok">{{ savedMessage }}</span>
+                } @else {
+                  Save
+                }
+              </button>
+            </div>
+          }
+        </div>
       } @else if (selectedTab) {
         <div class="tab-content">
           @if (loading[selectedTab]) {

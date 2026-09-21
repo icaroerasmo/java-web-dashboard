@@ -141,18 +141,6 @@ public class ModuleController {
         }
     }
 
-    @GetMapping("/go2rtc/streams")
-    public ResponseEntity<?> getGo2RtcStreams() {
-        try {
-            return restClient.get()
-                    .uri(properties.getGo2rtc().getBaseUrl() + "/api/streams")
-                    .retrieve()
-                    .toEntity(Map.class);
-        } catch (Exception e) {
-            return ResponseEntity.status(502).build();
-        }
-    }
-
     private String findBaseUrl(String name) {
         return properties.getModules().stream()
                 .filter(module -> module.getName().equals(name))

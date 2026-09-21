@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, Observable } from 'rxjs';
 import { ConfigService } from '../services/config.service';
 import { ModulesService, ModuleInfo } from '../services/modules.service';
 import { DynamicFormComponent } from '../dynamic-form/dynamic-form.component';
@@ -41,6 +42,11 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
   messagePayload = '';
   mqSending = false;
   mqMessage = '';
+
+  go2rtcStreams: { name: string; url: string }[] = [];
+  go2rtcOriginalNames: string[] = [];
+  go2rtcLoading = false;
+  go2rtcSaving = false;
 
   private pollTimer: any = null;
 
@@ -110,17 +116,8 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
         this.loadGlobalEnv();
       }
     } else if (name === 'go2rtc') {
-      if (!this.configs['go2rtc'] && !this.loading['go2rtc']) {
-        this.loading['go2rtc'] = true;
-        this.configService.getGo2RtcConfig().subscribe({
-          next: (config) => {
-            this.configs['go2rtc'] = config;
-            this.loading['go2rtc'] = false;
-          },
-          error: () => {
-            this.loading['go2rtc'] = false;
-          }
-        });
+      if (this.go2rtcStreams.length === 0 && !this.go2rtcLoading) {
+        this.loadGo2RtcStreams();
       }
     } else if (name === 'rabbitmq') {
       if (this.queues.length === 0 && !this.queuesLoading) {
@@ -193,12 +190,14 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
   }
 
   save(): void {
-    if (!this.selectedTab || !this.configs[this.selectedTab]) return;
+    if (!this.selectedTab) return;
+    if (this.isGo2RtcTab) {
+      this.saveGo2Rtc();
+      return;
+    }
+    if (!this.configs[this.selectedTab]) return;
     this.saving = true;
-    const request = this.isGo2RtcTab
-      ? this.configService.saveGo2RtcConfig(this.configs[this.selectedTab])
-      : this.configService.saveConfig(this.selectedTab, this.configs[this.selectedTab]);
-    request.subscribe({
+    this.configService.saveConfig(this.selectedTab, this.configs[this.selectedTab]).subscribe({
       next: () => {
         this.saving = false;
         this.savedMessage = 'Saved';
@@ -323,6 +322,62 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
       next: () => {
         this.messages = [];
         this.loadQueues();
+      }
+    });
+  }
+
+  loadGo2RtcStreams(): void {
+    this.go2rtcLoading = true;
+    this.configService.getGo2RtcStreams().subscribe({
+      next: (streams) => {
+        this.go2rtcStreams = streams;
+        this.go2rtcOriginalNames = streams.map((s: any) => s.name);
+        this.go2rtcLoading = false;
+      },
+      error: () => {
+        this.go2rtcStreams = [];
+        this.go2rtcOriginalNames = [];
+        this.go2rtcLoading = false;
+      }
+    });
+  }
+
+  addGo2RtcStream(): void {
+    this.go2rtcStreams.push({ name: '', url: '' });
+  }
+
+  removeGo2RtcStream(index: number): void {
+    this.go2rtcStreams.splice(index, 1);
+  }
+
+  saveGo2Rtc(): void {
+    const current = this.go2rtcStreams
+      .map(s => ({ name: s.name.trim(), url: s.url.trim() }))
+      .filter(s => s.name && s.url);
+    const currentNames = current.map(s => s.name);
+    const removed = this.go2rtcOriginalNames.filter(n => !currentNames.includes(n));
+    const ops: Observable<any>[] = [];
+    for (const name of removed) {
+      ops.push(this.configService.removeGo2RtcStream(name));
+    }
+    for (const s of current) {
+      ops.push(this.configService.saveGo2RtcStream(s.name, s.url));
+    }
+    if (ops.length === 0) {
+      this.savedMessage = 'Saved';
+      setTimeout(() => this.savedMessage = '', 2000);
+      return;
+    }
+    this.go2rtcSaving = true;
+    forkJoin(ops).subscribe({
+      next: () => {
+        this.go2rtcSaving = false;
+        this.savedMessage = 'Saved';
+        setTimeout(() => this.savedMessage = '', 2000);
+        this.loadGo2RtcStreams();
+      },
+      error: () => {
+        this.go2rtcSaving = false;
       }
     });
   }
