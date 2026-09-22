@@ -47,6 +47,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private expandedOverlay: HTMLElement | null = null;
   private expandedStartTransform = '';
   private pendingAttach = false;
+  private offlineStrikes = new Map<string, number>();
   private onKeydown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       this.closeExpanded();
@@ -159,7 +160,31 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   private startDetectionPolling(): void {
     this.refreshDetections();
-    this.detectionPolling = setInterval(() => this.refreshDetections(), 2000);
+    this.detectionPolling = setInterval(() => {
+      this.refreshDetections();
+      this.checkOffline();
+    }, 2000);
+  }
+
+  private checkOffline(): void {
+    const anchors = this.tileVideoAnchors?.toArray() ?? [];
+    for (let i = 0; i < this.players.length && i < this.streams.length; i++) {
+      const name = this.streams[i].name;
+      const player = this.players[i];
+      const video = player.video;
+      const ok = !!video && video.videoWidth > 0 && (video.readyState ?? 0) >= 2;
+      const strikes = this.offlineStrikes.get(name) ?? 0;
+      if (ok) {
+        this.offlineStrikes.delete(name);
+      } else {
+        this.offlineStrikes.set(name, strikes + 1);
+      }
+    }
+    void anchors;
+  }
+
+  isOffline(streamName: string): boolean {
+    return (this.offlineStrikes.get(streamName) ?? 0) >= 3;
   }
 
   private stopDetectionPolling(): void {
