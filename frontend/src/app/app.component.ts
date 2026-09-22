@@ -142,7 +142,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     el.style.display = 'block';
     el.media = withAudio ? 'video,audio' : 'video';
     el.src = this.streamSource(streamName);
-    el.play();
     return el;
   }
 
