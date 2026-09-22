@@ -6,20 +6,20 @@
 
 :root {
   /* Dark theme (default) */
-  --bg: #000;
-  --surface: rgba(0, 0, 0, 0.6);
-  --surface-strong: rgba(0, 0, 0, 0.35);
-  --surface-subtle: rgba(255, 255, 255, 0.03);
+  --bg: #18181b;
+  --surface: rgba(24, 24, 27, 0.85);
+  --surface-strong: rgba(24, 24, 27, 0.95);
+  --surface-subtle: rgba(255, 255, 255, 0.04);
   --surface-hover: rgba(255, 255, 255, 0.2);
   --text: #fff;
   --text-secondary: rgba(255, 255, 255, 0.75);
   --text-muted: rgba(255, 255, 255, 0.5);
   --text-faint: rgba(255, 255, 255, 0.35);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.15);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
   --input-bg: rgba(255, 255, 255, 0.08);
   --overlay: rgba(0, 0, 0, 0.2);
-  --modal-bg: rgba(20, 20, 30, 0.6);
+  --modal-bg: rgba(28, 28, 32, 0.7);
   --scrollbar: rgba(255, 255, 255, 0.15);
 }
 

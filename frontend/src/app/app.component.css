@@ -51,6 +51,10 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
+.camera-tile:hover .tile-label {
+  opacity: 0;
+}
+
 .camera-tile.detecting {
   border-color: #ef4444;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.55), 0 8px 24px rgba(0, 0, 0, 0.5);
@@ -116,6 +120,7 @@
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  transition: opacity 0.2s;
 }
 
 .tile-maximize {
