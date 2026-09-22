@@ -4,6 +4,7 @@ import { MenuComponent } from './menu/menu.component';
 import { ConfigModalComponent } from './config-modal/config-modal.component';
 import { ConfigService } from './services/config.service';
 import { computeGrid } from './services/grid-layout';
+import { buildDetectionMap } from './services/detection-map';
 
 // Import the VideoRTC class and register the custom element
 import { VideoRTC } from '../assets/video-rtc';
@@ -39,6 +40,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   gridRows = 1;
   expanded: CameraStream | null = null;
 
+  detections: Record<string, string> = {};
+  private detectionPolling: any = null;
+
   private players: VideoRTC[] = [];
   private expandedOverlay: HTMLElement | null = null;
   private expandedStartTransform = '';
@@ -62,6 +66,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.loadStreams();
+    this.startDetectionPolling();
     window.addEventListener('keydown', this.onKeydown);
   }
 
@@ -77,6 +82,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     window.removeEventListener('keydown', this.onKeydown);
+    this.stopDetectionPolling();
     this.disposePlayers();
     if (this.expandedOverlay) {
       this.expandedOverlay.querySelectorAll('video-rtc').forEach((el) => el.remove());
@@ -150,6 +156,33 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       player.remove();
     }
     this.players = [];
+  }
+
+  private startDetectionPolling(): void {
+    this.refreshDetections();
+    this.detectionPolling = setInterval(() => this.refreshDetections(), 2000);
+  }
+
+  private stopDetectionPolling(): void {
+    if (this.detectionPolling) {
+      clearInterval(this.detectionPolling);
+      this.detectionPolling = null;
+    }
+  }
+
+  private refreshDetections(): void {
+    this.configService.getDetections().subscribe({
+      next: (list) => {
+        this.detections = buildDetectionMap(list);
+      },
+      error: () => {
+        this.detections = {};
+      }
+    });
+  }
+
+  detectionFor(streamName: string): string | undefined {
+    return this.detections[streamName];
   }
 
   openStream(stream: CameraStream, event: Event): void {

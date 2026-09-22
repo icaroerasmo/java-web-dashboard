@@ -51,6 +51,39 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
+.camera-tile.detecting {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.55), 0 8px 24px rgba(0, 0, 0, 0.5);
+  animation: detection-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes detection-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.55), 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.25), 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.tile-detection-label {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  padding: 2px 10px;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  pointer-events: none;
+  max-width: calc(100% - 90px);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .tile-video {
   position: absolute;
   inset: 0;
