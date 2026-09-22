@@ -73,4 +73,8 @@ export class ConfigService {
   restartRabbitMq(): Observable<any> {
     return this.http.post<any>('/api/rabbitmq/restart', {});
   }
+
+  getDetections(): Observable<any> {
+    return this.http.get<any>('/api/detections');
+  }
 }
