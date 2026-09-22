@@ -20,33 +20,165 @@
   z-index: 1000;
 }
 
-/* Video window */
-.video-container {
+/* Camera wall */
+.camera-wall {
   flex: 1;
   min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 8px;
   padding: 16px;
+  background: var(--bg);
+  grid-template-columns: repeat(var(--grid-columns, 1), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--grid-rows, 1), minmax(0, 1fr));
 }
 
-.video-container :deep(video-rtc) {
+.camera-tile {
+  position: relative;
+  min-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.camera-tile:hover {
+  border-color: #6cb4ee;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.tile-video {
+  position: absolute;
+  inset: 0;
+}
+
+.camera-wall :deep(video-rtc) {
   display: block;
   width: 100%;
   height: 100%;
-  max-width: 1280px;
-  max-height: 720px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--border);
 }
 
-.video-container :deep(video-rtc video) {
+.camera-wall :deep(video-rtc video) {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.tile-label {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  pointer-events: none;
+  max-width: calc(100% - 88px);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tile-maximize {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  pointer-events: none;
+}
+
+.camera-tile:hover .tile-maximize {
+  display: flex;
+}
+
+.camera-wall-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+.camera-wall-empty.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Expanded (fullscreen) stream */
+.camera-wall :deep(.expanded-view) {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.6);
+  transform-origin: center center;
+  cursor: pointer;
+}
+
+.camera-wall :deep(.expanded-view) video-rtc {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.camera-wall :deep(.expanded-view) video-rtc video {
   object-fit: contain;
   width: 100%;
   height: 100%;
+}
+
+.camera-wall :deep(.expanded-view .expanded-label) {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 14px;
+  letter-spacing: 0.4px;
+  pointer-events: none;
+}
+
+.camera-wall :deep(.expanded-view .expanded-close) {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 26px;
+  line-height: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.camera-wall :deep(.expanded-view .expanded-close:hover) {
+  background: rgba(0, 0, 0, 0.8);
 }
 
 /* Footer bar */
