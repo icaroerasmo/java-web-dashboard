@@ -22,6 +22,8 @@
   --modal-bg: rgba(28, 28, 32, 0.7);
   --scrollbar: rgba(255, 255, 255, 0.15);
   --accent: #6cb4ee;
+  --amber: #eab308;
+  --green: #22c55e;
 }
 
 :root.light {
@@ -41,6 +43,8 @@
   --modal-bg: rgba(255, 255, 255, 0.9);
   --scrollbar: rgba(0, 0, 0, 0.2);
   --accent: #17509e;
+  --amber: #946f04;
+  --green: #15803d;
 }
 
 html, body {
