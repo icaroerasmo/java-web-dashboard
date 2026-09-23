@@ -47,9 +47,11 @@ public class Go2RtcController {
             List<Map<String, String>> result = new ArrayList<>();
             if (streams != null) {
                 for (Map.Entry<String, Map<String, Object>> entry : streams.entrySet()) {
+                    String name = entry.getKey();
                     Map<String, String> item = new LinkedHashMap<>();
-                    item.put("name", entry.getKey());
-                    item.put("url", sourceUrl(entry.getValue()));
+                    item.put("name", name);
+                    item.put("url", go2RtcUrl(name));
+                    item.put("source", sourceUrl(entry.getValue()));
                     result.add(item);
                 }
             }
@@ -132,6 +134,18 @@ public class Go2RtcController {
             }
         }
         return "";
+    }
+
+    private String go2RtcUrl(String name) {
+        String base = properties.getGo2rtc().getBaseUrl();
+        String host = base.replaceFirst("^[a-zA-Z]+://", "");
+        if (host.contains("/")) {
+            host = host.substring(0, host.indexOf('/'));
+        }
+        if (host.contains(":")) {
+            host = host.substring(0, host.lastIndexOf(':'));
+        }
+        return "rtsp://" + host + ":8554/" + name;
     }
 
     private String encodeQuery(String value) {
