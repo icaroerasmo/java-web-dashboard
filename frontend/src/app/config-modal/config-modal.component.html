@@ -1,6 +1,6 @@
 @if (open) {
   <div class="modal-backdrop" (click)="onBackdropClick($event)">
-    <div class="modal-container">
+    <div class="modal-container" [class.detail-view]="selectedTab !== null">
       <button class="close-btn" (click)="onClose()">&times;</button>
 
       <div class="indicators-row">
@@ -40,6 +40,14 @@
           Environment
         </button>
       </div>
+
+      <button class="back-btn" (click)="backToList()" aria-label="Voltar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Voltar
+      </button>
 
       @if (isEnvironmentTab) {
         <div class="tab-content">
