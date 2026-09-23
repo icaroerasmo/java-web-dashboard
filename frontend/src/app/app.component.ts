@@ -51,6 +51,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private expandedPlayer: VideoRTC | null = null;
   private expandedStartTransform = '';
   private expandedTile: HTMLElement | null = null;
+  private expandedOfflineOverlay: HTMLElement | null = null;
   private pendingAttach = false;
   private offlineStrikes = new Map<string, number>();
   private frameStates = new Map<string, { hash: string; count: number }>();
@@ -282,51 +283,63 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   private checkOffline(): void {
     for (let i = 0; i < this.players.length && i < this.streams.length; i++) {
-      const name = this.streams[i].name;
-      const player = this.players[i];
-      if (this.stoppedStreams.has(name)) {
-        this.offlineStrikes.delete(name);
-        continue;
-      }
-      const video = player.video;
-      const ok = !!video && video.videoWidth > 0 && (video.readyState ?? 0) >= 2;
-      const strikes = this.offlineStrikes.get(name) ?? 0;
-      if (ok) {
-        this.offlineStrikes.delete(name);
-      } else {
-        this.offlineStrikes.set(name, strikes + 1);
-      }
-      this.maybeRecover(name, player);
+      this.checkPlayerOffline(this.streams[i].name, this.players[i]);
     }
+    if (this.expanded && this.expandedPlayer) {
+      this.checkPlayerOffline(this.expanded.name, this.expandedPlayer);
+    }
+    this.updateExpandedOffline();
+  }
+
+  private checkPlayerOffline(name: string, player: VideoRTC): void {
+    if (this.stoppedStreams.has(name)) {
+      this.offlineStrikes.delete(name);
+      return;
+    }
+    const video = player.video;
+    const ok = !!video && video.videoWidth > 0 && (video.readyState ?? 0) >= 2;
+    const strikes = this.offlineStrikes.get(name) ?? 0;
+    if (ok) {
+      this.offlineStrikes.delete(name);
+    } else {
+      this.offlineStrikes.set(name, strikes + 1);
+    }
+    this.maybeRecover(name, player);
   }
 
   private checkFrozen(): void {
     for (let i = 0; i < this.players.length && i < this.streams.length; i++) {
-      const name = this.streams[i].name;
-      const player = this.players[i];
-      if (this.stoppedStreams.has(name) || (player.video && player.video.paused)) {
-        this.frameStates.delete(name);
-        continue;
-      }
-      const video = player.video;
-      if (!video || video.videoWidth <= 0 || (video.readyState ?? 0) < 2) {
-        this.frameStates.delete(name);
-        continue;
-      }
-      const hash = this.sampleFrameHash(video);
-      if (hash === null) {
-        this.frameStates.delete(name);
-        continue;
-      }
-      const state = this.frameStates.get(name);
-      if (state && state.hash === hash) {
-        state.count += 1;
-        this.frameStates.set(name, state);
-      } else {
-        this.frameStates.set(name, { hash, count: 1 });
-      }
-      this.maybeRecover(name, player);
+      this.checkPlayerFrozen(this.streams[i].name, this.players[i]);
     }
+    if (this.expanded && this.expandedPlayer) {
+      this.checkPlayerFrozen(this.expanded.name, this.expandedPlayer);
+    }
+    this.updateExpandedOffline();
+  }
+
+  private checkPlayerFrozen(name: string, player: VideoRTC): void {
+    if (this.stoppedStreams.has(name) || (player.video && player.video.paused)) {
+      this.frameStates.delete(name);
+      return;
+    }
+    const video = player.video;
+    if (!video || video.videoWidth <= 0 || (video.readyState ?? 0) < 2) {
+      this.frameStates.delete(name);
+      return;
+    }
+    const hash = this.sampleFrameHash(video);
+    if (hash === null) {
+      this.frameStates.delete(name);
+      return;
+    }
+    const state = this.frameStates.get(name);
+    if (state && state.hash === hash) {
+      state.count += 1;
+      this.frameStates.set(name, state);
+    } else {
+      this.frameStates.set(name, { hash, count: 1 });
+    }
+    this.maybeRecover(name, player);
   }
 
   private sampleFrameHash(video: HTMLVideoElement): string | null {
@@ -385,6 +398,41 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   offlineLabel(streamName: string): string {
     return `Camera ${streamName} is unavailable`;
+  }
+
+  private updateExpandedOffline(): void {
+    if (!this.expandedOfflineOverlay || !this.expanded) {
+      return;
+    }
+    const show = this.isOffline(this.expanded.name) && !this.isStopped(this.expanded.name);
+    this.expandedOfflineOverlay.style.display = show ? 'block' : 'none';
+  }
+
+  private smtpeBarsSvgHtml(): string {
+    return '<svg class="expanded-offline-bars" viewBox="0 0 700 540" preserveAspectRatio="none" aria-hidden="true">'
+      + '<rect x="0" y="0" width="100" height="360" fill="#bebebe"/>'
+      + '<rect x="100" y="0" width="100" height="360" fill="#c0be00"/>'
+      + '<rect x="200" y="0" width="100" height="360" fill="#00bebd"/>'
+      + '<rect x="300" y="0" width="100" height="360" fill="#00bc00"/>'
+      + '<rect x="400" y="0" width="100" height="360" fill="#be00bf"/>'
+      + '<rect x="500" y="0" width="100" height="360" fill="#bf0000"/>'
+      + '<rect x="600" y="0" width="100" height="360" fill="#0000bf"/>'
+      + '<rect x="0" y="360" width="100" height="45" fill="#0000bf"/>'
+      + '<rect x="100" y="360" width="100" height="45" fill="#030303"/>'
+      + '<rect x="200" y="360" width="100" height="45" fill="#be00bf"/>'
+      + '<rect x="300" y="360" width="100" height="45" fill="#030303"/>'
+      + '<rect x="400" y="360" width="100" height="45" fill="#00bebd"/>'
+      + '<rect x="500" y="360" width="100" height="45" fill="#030303"/>'
+      + '<rect x="600" y="360" width="100" height="45" fill="#bebebe"/>'
+      + '<rect x="0" y="405" width="125" height="135" fill="#003d67"/>'
+      + '<rect x="125" y="405" width="125" height="135" fill="#ffffff"/>'
+      + '<rect x="250" y="405" width="125" height="135" fill="#3e0076"/>'
+      + '<rect x="375" y="405" width="125" height="135" fill="#000000"/>'
+      + '<rect x="500" y="405" width="33" height="135" fill="#000000"/>'
+      + '<rect x="533" y="405" width="33" height="135" fill="#000000"/>'
+      + '<rect x="566" y="405" width="33" height="135" fill="#090909"/>'
+      + '<rect x="599" y="405" width="101" height="135" fill="#000000"/>'
+      + '</svg>';
   }
 
   private playerFor(streamName: string): VideoRTC | undefined {
@@ -497,6 +545,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.expandedPlayer = player;
     overlay.appendChild(player);
 
+    const offline = document.createElement('div');
+    offline.className = 'expanded-offline';
+    offline.style.display = 'none';
+    offline.innerHTML = this.smtpeBarsSvgHtml();
+    const offlineLabel = document.createElement('span');
+    offlineLabel.className = 'expanded-offline-label';
+    offlineLabel.textContent = this.offlineLabel(stream.name);
+    offline.appendChild(offlineLabel);
+    overlay.appendChild(offline);
+    this.expandedOfflineOverlay = offline;
+
     const label = document.createElement('span');
     label.className = 'expanded-label';
     label.textContent = stream.name;
@@ -601,6 +660,7 @@ player.video.muted = !player.video.muted;
     this.expanded = null;
     this.expandedPlayer = null;
     this.expandedTile = null;
+    this.expandedOfflineOverlay = null;
     host.style.overflowY = '';
     overlay.style.transform = toTransform;
     const toRemove = overlay;
