@@ -382,7 +382,7 @@
   }
 }
 
-@media (hover: none) {
+@media (hover: none) and (max-width: 640px) {
   .camera-tile .tile-maximize {
     display: flex;
   }
