@@ -40,4 +40,15 @@ describe('computeGrid', () => {
     expect(() => computeGrid(0)).toThrow();
     expect(() => computeGrid(-2)).toThrow();
   });
+
+  it('em container retrato empilha muitas linhas para tiles curtos', () => {
+    expect(computeGrid(4, 0.28)).toEqual({ columns: 1, rows: 4, cells: 4 });
+    expect(computeGrid(2, 0.28)).toEqual({ columns: 1, rows: 2, cells: 2 });
+  });
+
+  it('em container retrato com 8 cameras faz 1 coluna x 8 linhas ou o melhor ajuste', () => {
+    const grid = computeGrid(8, 0.28);
+    expect(grid.cells).toBeGreaterThanOrEqual(8);
+    expect(grid.columns).toBeLessThanOrEqual(grid.rows);
+  });
 });

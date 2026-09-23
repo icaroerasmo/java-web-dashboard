@@ -348,3 +348,54 @@
 .theme-toggle svg {
   display: block;
 }
+
+@media (max-width: 640px) {
+  .camera-wall {
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .camera-tile {
+    border-radius: 6px;
+  }
+
+  .tile-label {
+    font-size: 10px;
+    bottom: 4px;
+    left: 4px;
+    max-width: calc(100% - 8px);
+  }
+
+  .tile-detection-label {
+    font-size: 10px;
+    bottom: 4px;
+    right: 4px;
+  }
+
+  .tile-offline-label {
+    font-size: 10px;
+  }
+
+  .hamburger {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (hover: none) {
+  .camera-tile .tile-maximize {
+    display: flex;
+  }
+
+  .camera-tile .tile-controls {
+    display: flex;
+  }
+
+  .camera-tile .tile-label {
+    display: none;
+  }
+
+  .camera-tile:active {
+    border-color: #6cb4ee;
+  }
+}

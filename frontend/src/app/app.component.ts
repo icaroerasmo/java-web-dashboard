@@ -4,7 +4,7 @@ import { MenuComponent } from './menu/menu.component';
 import { ConfigModalComponent } from './config-modal/config-modal.component';
 import { ConfigService } from './services/config.service';
 import { DetectionWebSocketService } from './services/detection-websocket.service';
-import { computeGrid } from './services/grid-layout';
+import { computeGrid, CameraGrid } from './services/grid-layout';
 import { buildDetectionMap } from './services/detection-map';
 
 // Import the VideoRTC class and register the custom element
@@ -58,6 +58,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private frozenFrameCanvas: HTMLCanvasElement | null = null;
   private frozenFrameCtx: CanvasRenderingContext2D | null = null;
   private frozenSeconds = 3;
+  private gridObserver: ResizeObserver | null = null;
   private readonly RECOVER_INTERVAL_MS = 15000;
 
   @HostBinding('class.presentation') get hasPresentationMode(): boolean {
@@ -114,6 +115,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.startDetectionSocket();
     this.startHealthChecks();
     window.addEventListener('keydown', this.onKeydown);
+    this.watchGridResize();
   }
 
   ngAfterViewChecked(): void {
@@ -131,6 +133,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.detectionWebSocketService.disconnect();
     this.stopHealthChecks();
     this.disposePlayers();
+    this.gridObserver?.disconnect();
+    this.gridObserver = null;
     if (this.expandedOverlay) {
       this.expandedOverlay.querySelectorAll('video-rtc').forEach((el) => el.remove());
       this.expandedOverlay.remove();
@@ -154,7 +158,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.streams = (list ?? []).filter(
           (s: CameraStream) => !!s && !!s.name && !String(s.name).toLowerCase().endsWith('panel')
         );
-        const grid = computeGrid(Math.max(1, this.streams.length));
+        const grid = this.computeResponsiveGrid(this.streams.length);
         this.gridColumns = grid.columns;
         this.gridRows = grid.rows;
         this.resetPerStreamState();
@@ -174,6 +178,44 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.frameStates.clear();
     this.stoppedStreams.clear();
     this.lastRecoveryAt.clear();
+  }
+
+  private computeResponsiveGrid(count: number): CameraGrid {
+    const el = this.cameraWall?.nativeElement;
+    let targetAspect = 16 / 9;
+    if (el) {
+      const width = el.clientWidth;
+      const height = el.clientHeight;
+      if (width > 0 && height > 0) {
+        const containerAspect = width / height;
+        if (containerAspect < 1) {
+          targetAspect = Math.min(Math.max(containerAspect * (9 / 16), 0.25), 1);
+        }
+      }
+    }
+    return computeGrid(Math.max(1, count), targetAspect);
+  }
+
+  private watchGridResize(): void {
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+    const el = this.cameraWall?.nativeElement;
+    if (!el) {
+      return;
+    }
+    this.gridObserver?.disconnect();
+    this.gridObserver = new ResizeObserver(() => {
+      if (this.streams.length === 0) {
+        return;
+      }
+      const grid = this.computeResponsiveGrid(this.streams.length);
+      if (grid.columns !== this.gridColumns || grid.rows !== this.gridRows) {
+        this.gridColumns = grid.columns;
+        this.gridRows = grid.rows;
+      }
+    });
+    this.gridObserver.observe(el);
   }
 
   private attachTilePlayers(): void {

@@ -197,3 +197,48 @@ input[type="checkbox"] {
 .eye-btn svg {
   display: block;
 }
+
+@media (max-width: 640px) {
+  .field-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .field-label {
+    min-width: 0;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  .field-input,
+  .field-select,
+  .secret-field-wrapper {
+    max-width: 100%;
+    width: 100%;
+    font-size: 16px;
+  }
+
+  .secret-field-wrapper .field-input {
+    width: 100%;
+  }
+
+  .array-item {
+    padding: 8px 10px;
+  }
+
+  .section-block {
+    padding: 12px;
+  }
+
+  .add-btn,
+  .remove-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+}
