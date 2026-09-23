@@ -347,7 +347,7 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
       next: (streams) => {
         this.go2rtcStreams = streams.map((s: any) => ({
           name: s.name,
-          url: s.source || s.url || ''
+          url: ''
         }));
         this.go2rtcOriginalNames = streams.map((s: any) => s.name);
         this.go2rtcLoading = false;
@@ -369,11 +369,11 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
   }
 
   saveGo2Rtc(): void {
-    const current = this.go2rtcStreams
-      .map(s => ({ name: s.name.trim(), url: s.url.trim() }))
-      .filter(s => s.name && s.url);
-    const currentNames = current.map(s => s.name);
-    const removed = this.go2rtcOriginalNames.filter(n => !currentNames.includes(n));
+    const rows = this.go2rtcStreams
+      .map(s => ({ name: s.name.trim(), url: s.url.trim() }));
+    const current = rows.filter(s => s.name && s.url);
+    const presentNames = rows.map(s => s.name).filter(n => n.length > 0);
+    const removed = this.go2rtcOriginalNames.filter(n => !presentNames.includes(n));
     const ops: Observable<any>[] = [];
     for (const name of removed) {
       ops.push(this.configService.removeGo2RtcStream(name));
