@@ -175,6 +175,30 @@ export class VideoRTC extends HTMLElement {
     }
 
     /**
+     * Pause current playback. Keeps the current frame visible.
+     */
+    pause() {
+        if (this.video) this.video.pause();
+    }
+
+    /**
+     * Stop playback and release the WebSocket / WebRTC connection.
+     * Use `restart()` to reconnect.
+     */
+    stop() {
+        if (this.video) this.video.pause();
+        this.ondisconnect();
+    }
+
+    /**
+     * Reconnect to the source (if disconnected) and resume playback.
+     */
+    restart() {
+        if (!this.ws && !this.pc) this.onconnect();
+        this.play();
+    }
+
+    /**
      * Send message to server via WebSocket
      * @param {Object} value
      */
@@ -238,7 +262,7 @@ export class VideoRTC extends HTMLElement {
      */
     oninit() {
         this.video = document.createElement('video');
-        this.video.controls = true;
+        this.video.controls = false;
         this.video.playsInline = true;
         this.video.preload = 'auto';
 

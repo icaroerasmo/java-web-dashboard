@@ -1,35 +1,38 @@
 <!-- Top bar -->
-<div class="top-bar">
-  <button class="hamburger" [class.open]="menuOpen" (click)="toggleMenu()" [attr.aria-label]="menuOpen ? 'Fechar menu' : 'Abrir menu'">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-  <button class="theme-toggle" (click)="toggleTheme()" [attr.title]="theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'">
-    @if (theme === 'dark') {
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="1" x2="12" y2="3"/>
-        <line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/>
-        <line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>
-    } @else {
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-    }
-  </button>
-</div>
+@if (!presentationMode) {
+  <div class="top-bar">
+    <button class="hamburger" [class.open]="menuOpen" (click)="toggleMenu()" [attr.aria-label]="menuOpen ? 'Fechar menu' : 'Abrir menu'">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <button class="theme-toggle" (click)="toggleTheme()" [attr.title]="theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'">
+      @if (theme === 'dark') {
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      }
+    </button>
+  </div>
+}
 
 <!-- Camera wall -->
 <div
   #cameraWall
   class="camera-wall"
+  [class.presentation]="presentationMode"
   [style.--grid-columns]="gridColumns"
   [style.--grid-rows]="gridRows"
 >
@@ -43,12 +46,12 @@
     @for (stream of streams; track stream.name) {
       <div
         class="camera-tile"
-        [class.detecting]="!!detectionFor(stream.name)"
+        [class.detecting]="!presentationMode && !!detectionFor(stream.name)"
         [class.offline]="isOffline(stream.name)"
         (click)="openStream(stream, $event)"
       >
         <div class="tile-video" #tileVideo></div>
-        @if (isOffline(stream.name)) {
+        @if (isOffline(stream.name) && !isStopped(stream.name)) {
           <div class="tile-offline">
             <svg class="tile-offline-bars" viewBox="0 0 700 540" preserveAspectRatio="none" aria-hidden="true">
               <rect x="0" y="0" width="100" height="420" fill="#c0c0c0"/>
@@ -67,10 +70,10 @@
               <rect x="600" y="420" width="100" height="40" fill="#00c000"/>
               <rect x="0" y="460" width="700" height="80" fill="#0000c0"/>
             </svg>
-            <span class="tile-offline-label">SEM SINAL</span>
+            <span class="tile-offline-label">{{ offlineLabel(stream.name) }}</span>
           </div>
         }
-        @if (detectionFor(stream.name) !== undefined) {
+        @if (!presentationMode && detectionFor(stream.name) !== undefined) {
           <span class="tile-detection-label">{{ detectionFor(stream.name) }}</span>
         }
         <span class="tile-maximize" title="Expandir">
@@ -81,19 +84,52 @@
             <line x1="3" y1="21" x2="10" y2="14"/>
           </svg>
         </span>
-        <span class="tile-label">{{ stream.name }}</span>
+        @if (!presentationMode) {
+          <span class="tile-label">{{ stream.name }}</span>
+          <div class="tile-controls" (click)="$event.stopPropagation()">
+            @if (isStopped(stream.name)) {
+              <button class="tile-control-btn" title="Reproduzir" (click)="togglePlay(stream.name, $event)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+              </button>
+            } @else {
+              @if (isPaused(stream.name)) {
+                <button class="tile-control-btn" title="Reproduzir" (click)="togglePlay(stream.name, $event)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                </button>
+              } @else {
+                <button class="tile-control-btn" title="Pausar" (click)="togglePlay(stream.name, $event)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+                </button>
+              }
+            }
+            <button class="tile-control-btn" [attr.title]="isStopped(stream.name) ? 'Reproduzir' : 'Parar'" (click)="isStopped(stream.name) ? togglePlay(stream.name, $event) : stopStream(stream.name, $event)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+            </button>
+          </div>
+        }
       </div>
     }
   }
 </div>
 
 <!-- Footer bar -->
-<div class="footer-bar">© Ícaro Erasmo Souza Barreiro</div>
+@if (!presentationMode) {
+  <div class="footer-bar">© Ícaro Erasmo Souza Barreiro</div>
+}
+
+<!-- Presentation exit -->
+@if (presentationMode) {
+  <button class="presentation-exit" title="Sair da apresentação" (click)="exitPresentation()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    Sair
+  </button>
+}
 
 <!-- Menu -->
 <app-menu
   [open]="menuOpen"
   (openConfigs)="openConfigs()"
+  (openPresentation)="enterPresentation()"
   (close)="closeMenu()"
 />
 
