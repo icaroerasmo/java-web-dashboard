@@ -50,6 +50,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private expandedOverlay: HTMLElement | null = null;
   private expandedPlayer: VideoRTC | null = null;
   private expandedStartTransform = '';
+  private expandedTile: HTMLElement | null = null;
   private pendingAttach = false;
   private offlineStrikes = new Map<string, number>();
   private frameStates = new Map<string, { hash: string; count: number }>();
@@ -453,6 +454,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     return this.detections[streamName];
   }
 
+  private computeFlipTransform(tileRect: DOMRect, hostRect: DOMRect): string {
+    const scaleX = tileRect.width / hostRect.width;
+    const scaleY = tileRect.height / hostRect.height;
+    const dx = tileRect.left + tileRect.width / 2 - (hostRect.left + hostRect.width / 2);
+    const dy = tileRect.top + tileRect.height / 2 - (hostRect.top + hostRect.height / 2);
+    return `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
+  }
+
   openStream(stream: CameraStream, event: Event): void {
     if (this.expandedOverlay || this.presentationMode) {
       return;
@@ -465,16 +474,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const scaleX = tileRect.width / hostRect.width;
-    const scaleY = tileRect.height / hostRect.height;
-    const dx = tileRect.left + tileRect.width / 2 - (hostRect.left + hostRect.width / 2);
-    const dy = tileRect.top + tileRect.height / 2 - (hostRect.top + hostRect.height / 2);
-    this.expandedStartTransform = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
+    this.expandedStartTransform = this.computeFlipTransform(tileRect, hostRect);
+    this.expandedTile = tile;
 
     const overlay = document.createElement('div');
     overlay.className = 'expanded-view';
-    overlay.style.position = 'absolute';
-    overlay.style.inset = '0';
+    overlay.style.position = 'fixed';
+    overlay.style.left = `${hostRect.left}px`;
+    overlay.style.top = `${hostRect.top}px`;
+    overlay.style.width = `${hostRect.width}px`;
+    overlay.style.height = `${hostRect.height}px`;
     overlay.style.zIndex = '50';
     overlay.style.background = '#000';
     overlay.style.transformOrigin = 'center center';
@@ -498,6 +507,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     overlay.addEventListener('click', () => this.closeExpanded());
 
     host.appendChild(overlay);
+    host.style.overflowY = 'hidden';
     this.expandedOverlay = overlay;
     this.expanded = { name: stream.name, url: stream.url };
 
@@ -581,9 +591,18 @@ player.video.muted = !player.video.muted;
       return;
     }
     const overlay = this.expandedOverlay;
+    const host = this.cameraWall.nativeElement;
+    const hostRect = host.getBoundingClientRect();
+    const tileRect = this.expandedTile ? this.expandedTile.getBoundingClientRect() : null;
+    const toTransform =
+      tileRect && hostRect.width && hostRect.height && tileRect.width && tileRect.height
+        ? this.computeFlipTransform(tileRect, hostRect)
+        : this.expandedStartTransform;
     this.expanded = null;
     this.expandedPlayer = null;
-    overlay.style.transform = this.expandedStartTransform;
+    this.expandedTile = null;
+    host.style.overflowY = '';
+    overlay.style.transform = toTransform;
     const toRemove = overlay;
     setTimeout(() => {
       toRemove.querySelectorAll('video-rtc').forEach((el) => el.remove());
