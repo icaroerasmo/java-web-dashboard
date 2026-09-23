@@ -758,11 +758,16 @@
     border-bottom: 1px solid var(--border);
     background: var(--surface-subtle);
     margin-bottom: 8px;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
   }
 
   .tab-btn.active {
-    border-color: rgba(100, 180, 255, 0.4);
-    background: rgba(100, 180, 255, 0.12);
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--surface-strong);
+    font-weight: 600;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   }
 
   .config-scroll,

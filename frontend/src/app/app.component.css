@@ -353,10 +353,18 @@
   .camera-wall {
     gap: 4px;
     padding: 8px;
+    overflow-y: auto;
+    align-content: start;
+    grid-template-rows: repeat(var(--grid-rows, 1), auto);
   }
 
   .camera-tile {
     border-radius: 6px;
+    aspect-ratio: 16 / 9;
+  }
+
+  .hamburger.open {
+    transform: none;
   }
 
   .tile-label {

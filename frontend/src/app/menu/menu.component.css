@@ -61,16 +61,46 @@
   background: var(--surface-hover);
 }
 
+.menu-close {
+  display: none;
+}
+
 @media (max-width: 640px) {
+  .menu-overlay {
+    z-index: 1500;
+  }
+
   .menu-panel {
-    width: min(88vw, 320px);
-    padding: 20px 16px;
-    padding-top: env(safe-area-inset-top, 20px);
-    padding-bottom: env(safe-area-inset-bottom, 20px);
+    width: 100vw;
+    height: 100dvh;
+    padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px);
+  }
+
+  .menu-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .menu-close:hover {
+    background: var(--surface-hover);
+  }
+
+  .menu-close svg {
+    display: block;
   }
 
   .menu-items {
-    margin-top: 20px;
+    margin-top: 16px;
     gap: 8px;
   }
 
