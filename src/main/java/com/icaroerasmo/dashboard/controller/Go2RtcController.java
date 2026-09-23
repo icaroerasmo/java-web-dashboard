@@ -51,7 +51,6 @@ public class Go2RtcController {
                     Map<String, String> item = new LinkedHashMap<>();
                     item.put("name", name);
                     item.put("url", go2RtcUrl(name));
-                    item.put("source", sourceUrl(entry.getValue()));
                     result.add(item);
                 }
             }
@@ -123,17 +122,6 @@ public class Go2RtcController {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    private String sourceUrl(Map<String, Object> stream) {
-        Object producers = stream.get("producers");
-        if (producers instanceof List<?> list && !list.isEmpty() && list.get(0) instanceof Map<?, ?> first) {
-            Object url = first.get("url");
-            if (url != null) {
-                return String.valueOf(url);
-            }
-        }
-        return "";
     }
 
     private String go2RtcUrl(String name) {
