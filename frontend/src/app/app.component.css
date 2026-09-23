@@ -352,7 +352,7 @@
 @media (max-width: 640px) {
   .camera-wall {
     gap: 4px;
-    padding: 8px;
+    padding: 8px 8px calc(env(safe-area-inset-bottom, 0px) + 32px);
     overflow-y: auto;
     align-content: start;
     grid-template-rows: repeat(var(--grid-rows, 1), auto);
