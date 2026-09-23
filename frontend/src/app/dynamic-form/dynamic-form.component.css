@@ -239,6 +239,24 @@ input[type="checkbox"] {
     margin-bottom: 8px;
   }
 
+  .section-label {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .nested .section-label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0.2px;
+  }
+
+  .nested .section-block {
+    margin-top: 16px;
+  }
+
   .add-btn,
   .remove-btn {
     padding: 8px 14px;
