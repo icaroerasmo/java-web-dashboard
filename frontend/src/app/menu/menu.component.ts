@@ -27,4 +27,8 @@ export class MenuComponent {
   onOverlayClick(): void {
     this.close.emit();
   }
+
+  onClose(): void {
+    this.close.emit();
+  }
 }
