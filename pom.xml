@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.icaroerasmo</groupId>
     <artifactId>java-web-dashboard</artifactId>
-    <version>0.8.2</version>
+    <version>0.8.3</version>
     <name>java-web-dashboard</name>
     <description>Web dashboard for the camera stack</description>
     <properties>
@@ -28,6 +28,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

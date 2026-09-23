@@ -345,7 +345,10 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
     this.go2rtcLoading = true;
     this.configService.getGo2RtcStreams().subscribe({
       next: (streams) => {
-        this.go2rtcStreams = streams;
+        this.go2rtcStreams = streams.map((s: any) => ({
+          name: s.name,
+          url: s.source || s.url || ''
+        }));
         this.go2rtcOriginalNames = streams.map((s: any) => s.name);
         this.go2rtcLoading = false;
       },

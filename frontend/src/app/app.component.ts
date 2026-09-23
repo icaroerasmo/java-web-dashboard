@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MenuComponent } from './menu/menu.component';
 import { ConfigModalComponent } from './config-modal/config-modal.component';
 import { ConfigService } from './services/config.service';
+import { DetectionWebSocketService } from './services/detection-websocket.service';
 import { computeGrid } from './services/grid-layout';
 import { buildDetectionMap } from './services/detection-map';
 
@@ -41,12 +42,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   expanded: CameraStream | null = null;
 
   detections: Record<string, string> = {};
-  private detectionPolling: any = null;
+  private offlinePolling: any = null;
 
   private players: VideoRTC[] = [];
   private expandedOverlay: HTMLElement | null = null;
   private expandedStartTransform = '';
   private pendingAttach = false;
+  private offlineStrikes = new Map<string, number>();
   private onKeydown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       this.closeExpanded();
@@ -55,6 +57,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private configService: ConfigService,
+    private detectionWebSocketService: DetectionWebSocketService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     const saved = localStorage.getItem('dashboard-theme');
@@ -66,7 +69,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.loadStreams();
-    this.startDetectionPolling();
+    this.startDetectionSocket();
+    this.startOfflineCheck();
     window.addEventListener('keydown', this.onKeydown);
   }
 
@@ -82,7 +86,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     window.removeEventListener('keydown', this.onKeydown);
-    this.stopDetectionPolling();
+    this.detectionWebSocketService.disconnect();
+    this.stopOfflineCheck();
     this.disposePlayers();
     if (this.expandedOverlay) {
       this.expandedOverlay.querySelectorAll('video-rtc').forEach((el) => el.remove());
@@ -105,7 +110,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       next: (list) => {
         this.loadingStreams = false;
         this.streams = (list ?? []).filter(
-          (s: CameraStream) => !!s && !!s.url && !String(s.name).toLowerCase().endsWith('panel')
+          (s: CameraStream) => !!s && !!s.name && !String(s.name).toLowerCase().endsWith('panel')
         );
         const grid = computeGrid(Math.max(1, this.streams.length));
         this.gridColumns = grid.columns;
@@ -157,27 +162,45 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.players = [];
   }
 
-  private startDetectionPolling(): void {
-    this.refreshDetections();
-    this.detectionPolling = setInterval(() => this.refreshDetections(), 2000);
+  private startDetectionSocket(): void {
+    this.detectionWebSocketService.connect();
+    this.detectionWebSocketService.messages().subscribe({
+      next: (list) => {
+        this.detections = buildDetectionMap(list);
+      }
+    });
   }
 
-  private stopDetectionPolling(): void {
-    if (this.detectionPolling) {
-      clearInterval(this.detectionPolling);
-      this.detectionPolling = null;
+  private startOfflineCheck(): void {
+    this.offlinePolling = setInterval(() => this.checkOffline(), 2000);
+  }
+
+  private stopOfflineCheck(): void {
+    if (this.offlinePolling) {
+      clearInterval(this.offlinePolling);
+      this.offlinePolling = null;
     }
   }
 
-  private refreshDetections(): void {
-    this.configService.getDetections().subscribe({
-      next: (list) => {
-        this.detections = buildDetectionMap(list);
-      },
-      error: () => {
-        this.detections = {};
+  private checkOffline(): void {
+    const anchors = this.tileVideoAnchors?.toArray() ?? [];
+    for (let i = 0; i < this.players.length && i < this.streams.length; i++) {
+      const name = this.streams[i].name;
+      const player = this.players[i];
+      const video = player.video;
+      const ok = !!video && video.videoWidth > 0 && (video.readyState ?? 0) >= 2;
+      const strikes = this.offlineStrikes.get(name) ?? 0;
+      if (ok) {
+        this.offlineStrikes.delete(name);
+      } else {
+        this.offlineStrikes.set(name, strikes + 1);
       }
-    });
+    }
+    void anchors;
+  }
+
+  isOffline(streamName: string): boolean {
+    return (this.offlineStrikes.get(streamName) ?? 0) >= 3;
   }
 
   detectionFor(streamName: string): string | undefined {
@@ -204,6 +227,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     const overlay = document.createElement('div');
     overlay.className = 'expanded-view';
+    overlay.style.position = 'absolute';
+    overlay.style.inset = '0';
+    overlay.style.zIndex = '50';
+    overlay.style.background = '#000';
+    overlay.style.transformOrigin = 'center center';
+    overlay.style.cursor = 'pointer';
+    overlay.style.borderRadius = '8px';
+    overlay.style.overflow = 'hidden';
     overlay.style.transform = this.expandedStartTransform;
     overlay.style.transition = 'none';
 
@@ -214,17 +245,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     label.className = 'expanded-label';
     label.textContent = stream.name;
     overlay.appendChild(label);
-
-    const close = document.createElement('button');
-    close.className = 'expanded-close';
-    close.setAttribute('aria-label', 'Fechar visualização');
-    close.title = 'Fechar (Esc)';
-    close.innerHTML = '&times;';
-    close.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.closeExpanded();
-    });
-    overlay.appendChild(close);
 
     overlay.addEventListener('click', () => this.closeExpanded());
 
