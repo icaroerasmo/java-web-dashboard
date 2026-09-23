@@ -103,9 +103,9 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
     this.modulesService.getModules().subscribe({
       next: (res) => {
         this.modules = res.modules;
-        if (this.liveJavaModules.length > 0 && !this.selectedTab) {
-          this.selectTab(this.liveJavaModules[0].name);
-        }
+      if (this.liveJavaModules.length > 0 && !this.selectedTab && !this.isSmallScreen()) {
+        this.selectTab(this.liveJavaModules[0].name);
+      }
       }
     });
   }
@@ -401,7 +401,18 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
   }
 
   onClose(): void {
+    if (this.isSmallScreen()) {
+      this.selectedTab = null;
+    }
     this.close.emit();
+  }
+
+  backToList(): void {
+    this.selectedTab = null;
+  }
+
+  private isSmallScreen(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches;
   }
 
   onBackdropClick(event: MouseEvent): void {

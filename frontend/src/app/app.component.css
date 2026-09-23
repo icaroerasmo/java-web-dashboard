@@ -361,6 +361,11 @@
   .camera-tile {
     border-radius: 6px;
     aspect-ratio: 16 / 9;
+    box-shadow: none;
+  }
+
+  .camera-tile:hover {
+    box-shadow: none;
   }
 
   .hamburger.open {

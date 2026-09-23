@@ -709,6 +709,10 @@
   flex-shrink: 0;
 }
 
+.back-btn {
+  display: none;
+}
+
 @media (max-width: 640px) {
   .modal-backdrop {
     padding: 0;
@@ -746,8 +750,8 @@
     gap: 6px;
     overflow-y: auto;
     overflow-x: hidden;
-    flex-shrink: 0;
-    max-height: 45vh;
+    flex: 1;
+    min-height: 0;
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar) transparent;
   }
@@ -966,5 +970,39 @@
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+
+  .modal-container.detail-view .indicators-row,
+  .modal-container.detail-view .tabs-row {
+    display: none;
+  }
+
+  .modal-container:not(.detail-view) .tab-content,
+  .modal-container:not(.detail-view) .empty-state {
+    display: none;
+  }
+
+  .modal-container.detail-view .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    margin: 4px 12px 0;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .modal-container.detail-view .back-btn:hover {
+    background: var(--surface-hover);
+  }
+
+  .back-btn svg {
+    display: block;
   }
 }
