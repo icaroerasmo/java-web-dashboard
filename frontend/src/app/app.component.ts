@@ -65,12 +65,20 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   private onKeydown = (event: KeyboardEvent) => {
+    const target = event.target as HTMLElement | null;
+    const tag = target ? target.tagName : '';
+    const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || !!target?.isContentEditable;
     if (event.key === 'Escape') {
       if (this.presentationMode) {
         this.exitPresentation();
       } else {
         this.closeExpanded();
       }
+      return;
+    }
+    if (!typing && (event.key === 'p' || event.key === 'P')) {
+      event.preventDefault();
+      this.togglePresentation();
     }
   };
 
@@ -333,11 +341,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   offlineLabel(streamName: string): string {
-    const state = this.frameStates.get(streamName);
-    if (state && state.count >= this.frozenSeconds) {
-      return 'FRAME CONGELADO';
-    }
-    return 'SEM SINAL';
+    return `Camera ${streamName} is unavailable`;
   }
 
   private playerFor(streamName: string): VideoRTC | undefined {
@@ -573,6 +577,14 @@ player.video.muted = !player.video.muted;
 
   exitPresentation(): void {
     this.presentationMode = false;
+  }
+
+  togglePresentation(): void {
+    if (this.presentationMode) {
+      this.exitPresentation();
+    } else {
+      this.enterPresentation();
+    }
   }
 
   toggleTheme(): void {

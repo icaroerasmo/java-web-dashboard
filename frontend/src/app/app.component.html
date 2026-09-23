@@ -54,21 +54,28 @@
         @if (isOffline(stream.name) && !isStopped(stream.name)) {
           <div class="tile-offline">
             <svg class="tile-offline-bars" viewBox="0 0 700 540" preserveAspectRatio="none" aria-hidden="true">
-              <rect x="0" y="0" width="100" height="420" fill="#c0c0c0"/>
-              <rect x="100" y="0" width="100" height="420" fill="#c0c000"/>
-              <rect x="200" y="0" width="100" height="420" fill="#00c0c0"/>
-              <rect x="300" y="0" width="100" height="420" fill="#00c000"/>
-              <rect x="400" y="0" width="100" height="420" fill="#c000c0"/>
-              <rect x="500" y="0" width="100" height="420" fill="#c00000"/>
-              <rect x="600" y="0" width="100" height="420" fill="#0000c0"/>
-              <rect x="0" y="420" width="100" height="40" fill="#0020c0"/>
-              <rect x="100" y="420" width="100" height="40" fill="#c02000"/>
-              <rect x="200" y="420" width="100" height="40" fill="#c08000"/>
-              <rect x="300" y="420" width="100" height="40" fill="#20c000"/>
-              <rect x="400" y="420" width="100" height="40" fill="#000000"/>
-              <rect x="500" y="420" width="100" height="40" fill="#c0c0c0"/>
-              <rect x="600" y="420" width="100" height="40" fill="#00c000"/>
-              <rect x="0" y="460" width="700" height="80" fill="#0000c0"/>
+              <rect x="0"   y="0"   width="100" height="360" fill="#bebebe"/>
+              <rect x="100" y="0"   width="100" height="360" fill="#c0be00"/>
+              <rect x="200" y="0"   width="100" height="360" fill="#00bebd"/>
+              <rect x="300" y="0"   width="100" height="360" fill="#00bc00"/>
+              <rect x="400" y="0"   width="100" height="360" fill="#be00bf"/>
+              <rect x="500" y="0"   width="100" height="360" fill="#bf0000"/>
+              <rect x="600" y="0"   width="100" height="360" fill="#0000bf"/>
+              <rect x="0"   y="360" width="100" height="45" fill="#0000bf"/>
+              <rect x="100" y="360" width="100" height="45" fill="#030303"/>
+              <rect x="200" y="360" width="100" height="45" fill="#be00bf"/>
+              <rect x="300" y="360" width="100" height="45" fill="#030303"/>
+              <rect x="400" y="360" width="100" height="45" fill="#00bebd"/>
+              <rect x="500" y="360" width="100" height="45" fill="#030303"/>
+              <rect x="600" y="360" width="100" height="45" fill="#bebebe"/>
+              <rect x="0"   y="405" width="125" height="135" fill="#003d67"/>
+              <rect x="125" y="405" width="125" height="135" fill="#ffffff"/>
+              <rect x="250" y="405" width="125" height="135" fill="#3e0076"/>
+              <rect x="375" y="405" width="125" height="135" fill="#000000"/>
+              <rect x="500" y="405" width="33"  height="135" fill="#000000"/>
+              <rect x="533" y="405" width="33"  height="135" fill="#000000"/>
+              <rect x="566" y="405" width="33"  height="135" fill="#090909"/>
+              <rect x="599" y="405" width="101" height="135" fill="#000000"/>
             </svg>
             <span class="tile-offline-label">{{ offlineLabel(stream.name) }}</span>
           </div>
