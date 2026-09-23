@@ -6,9 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Log4j2
@@ -49,10 +47,6 @@ public class DetectionStateService {
         long now = System.currentTimeMillis();
         DetectionState state = states.get(cameraName);
         return state != null && now - state.detectedAt() <= TTL_MS;
-    }
-
-    public void removeExpired() {
-        activeDetections();
     }
 
     @Scheduled(fixedDelayString = "5000")

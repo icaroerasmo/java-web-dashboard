@@ -19,14 +19,6 @@ export class ConfigService {
     return this.http.post<any>(`/api/modules/${name}/restart`, {});
   }
 
-  getEnv(name: string): Observable<any> {
-    return this.http.get<any>(`/api/modules/${name}/env`);
-  }
-
-  saveEnv(name: string, envVars: any): Observable<any> {
-    return this.http.put<any>(`/api/modules/${name}/env`, envVars);
-  }
-
   getGlobalEnv(): Observable<any> {
     return this.http.get<any>('/api/env');
   }
@@ -72,9 +64,5 @@ export class ConfigService {
 
   restartRabbitMq(): Observable<any> {
     return this.http.post<any>('/api/rabbitmq/restart', {});
-  }
-
-  getDetections(): Observable<any> {
-    return this.http.get<any>('/api/detections');
   }
 }
