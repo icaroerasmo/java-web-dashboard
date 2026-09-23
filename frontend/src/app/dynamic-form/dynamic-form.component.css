@@ -247,10 +247,10 @@ input[type="checkbox"] {
 
   .nested .section-label {
     color: var(--text-secondary);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    text-transform: none;
-    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
   }
 
   .nested .section-block {
