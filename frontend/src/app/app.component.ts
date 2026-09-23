@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, QueryList, ViewChildren, AfterViewInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, ElementRef, ViewChild, QueryList, ViewChildren, AfterViewInit, OnDestroy, Inject, PLATFORM_ID, HostBinding } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MenuComponent } from './menu/menu.component';
 import { ConfigModalComponent } from './config-modal/config-modal.component';
@@ -33,6 +33,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   menuOpen = false;
   configModalOpen = false;
   theme: 'dark' | 'light' = 'dark';
+  presentationMode = false;
 
   streams: CameraStream[] = [];
   loadingStreams = false;
@@ -43,15 +44,33 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   detections: Record<string, string> = {};
   private offlinePolling: any = null;
+  private frozenPolling: any = null;
 
   private players: VideoRTC[] = [];
   private expandedOverlay: HTMLElement | null = null;
+  private expandedPlayer: VideoRTC | null = null;
   private expandedStartTransform = '';
   private pendingAttach = false;
   private offlineStrikes = new Map<string, number>();
+  private frameStates = new Map<string, { hash: string; count: number }>();
+  private stoppedStreams = new Set<string>();
+  private lastRecoveryAt = new Map<string, number>();
+  private frozenFrameCanvas: HTMLCanvasElement | null = null;
+  private frozenFrameCtx: CanvasRenderingContext2D | null = null;
+  private frozenSeconds = 3;
+  private readonly RECOVER_INTERVAL_MS = 15000;
+
+  @HostBinding('class.presentation') get hasPresentationMode(): boolean {
+    return this.presentationMode;
+  }
+
   private onKeydown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      this.closeExpanded();
+      if (this.presentationMode) {
+        this.exitPresentation();
+      } else {
+        this.closeExpanded();
+      }
     }
   };
 
@@ -64,13 +83,28 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     if (saved === 'light') {
       this.theme = 'light';
     }
+    this.readUrlParams();
     this.applyTheme();
+  }
+
+  private readUrlParams(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('presentation') === '1') {
+      this.presentationMode = true;
+    }
+    const frozen = Number(params.get('frozen'));
+    if (frozen > 0) {
+      this.frozenSeconds = frozen;
+    }
   }
 
   ngAfterViewInit(): void {
     this.loadStreams();
     this.startDetectionSocket();
-    this.startOfflineCheck();
+    this.startHealthChecks();
     window.addEventListener('keydown', this.onKeydown);
   }
 
@@ -87,7 +121,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     window.removeEventListener('keydown', this.onKeydown);
     this.detectionWebSocketService.disconnect();
-    this.stopOfflineCheck();
+    this.stopHealthChecks();
     this.disposePlayers();
     if (this.expandedOverlay) {
       this.expandedOverlay.querySelectorAll('video-rtc').forEach((el) => el.remove());
@@ -115,6 +149,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         const grid = computeGrid(Math.max(1, this.streams.length));
         this.gridColumns = grid.columns;
         this.gridRows = grid.rows;
+        this.resetPerStreamState();
         this.disposePlayers();
         this.pendingAttach = true;
       },
@@ -124,6 +159,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.streamsError = true;
       }
     });
+  }
+
+  private resetPerStreamState(): void {
+    this.offlineStrikes.clear();
+    this.frameStates.clear();
+    this.stoppedStreams.clear();
+    this.lastRecoveryAt.clear();
   }
 
   private attachTilePlayers(): void {
@@ -171,22 +213,30 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private startOfflineCheck(): void {
+  private startHealthChecks(): void {
     this.offlinePolling = setInterval(() => this.checkOffline(), 2000);
+    this.frozenPolling = setInterval(() => this.checkFrozen(), 1000);
   }
 
-  private stopOfflineCheck(): void {
+  private stopHealthChecks(): void {
     if (this.offlinePolling) {
       clearInterval(this.offlinePolling);
       this.offlinePolling = null;
     }
+    if (this.frozenPolling) {
+      clearInterval(this.frozenPolling);
+      this.frozenPolling = null;
+    }
   }
 
   private checkOffline(): void {
-    const anchors = this.tileVideoAnchors?.toArray() ?? [];
     for (let i = 0; i < this.players.length && i < this.streams.length; i++) {
       const name = this.streams[i].name;
       const player = this.players[i];
+      if (this.stoppedStreams.has(name)) {
+        this.offlineStrikes.delete(name);
+        continue;
+      }
       const video = player.video;
       const ok = !!video && video.videoWidth > 0 && (video.readyState ?? 0) >= 2;
       const strikes = this.offlineStrikes.get(name) ?? 0;
@@ -195,12 +245,162 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       } else {
         this.offlineStrikes.set(name, strikes + 1);
       }
+      this.maybeRecover(name, player);
     }
-    void anchors;
+  }
+
+  private checkFrozen(): void {
+    for (let i = 0; i < this.players.length && i < this.streams.length; i++) {
+      const name = this.streams[i].name;
+      const player = this.players[i];
+      if (this.stoppedStreams.has(name) || (player.video && player.video.paused)) {
+        this.frameStates.delete(name);
+        continue;
+      }
+      const video = player.video;
+      if (!video || video.videoWidth <= 0 || (video.readyState ?? 0) < 2) {
+        this.frameStates.delete(name);
+        continue;
+      }
+      const hash = this.sampleFrameHash(video);
+      if (hash === null) {
+        this.frameStates.delete(name);
+        continue;
+      }
+      const state = this.frameStates.get(name);
+      if (state && state.hash === hash) {
+        state.count += 1;
+        this.frameStates.set(name, state);
+      } else {
+        this.frameStates.set(name, { hash, count: 1 });
+      }
+      this.maybeRecover(name, player);
+    }
+  }
+
+  private sampleFrameHash(video: HTMLVideoElement): string | null {
+    try {
+      if (!this.frozenFrameCanvas) {
+        this.frozenFrameCanvas = document.createElement('canvas');
+        this.frozenFrameCanvas.width = 32;
+        this.frozenFrameCanvas.height = 18;
+        this.frozenFrameCtx = this.frozenFrameCanvas.getContext('2d');
+      }
+      const ctx = this.frozenFrameCtx;
+      if (!ctx) {
+        return null;
+      }
+      ctx.drawImage(video, 0, 0, 32, 18);
+      const data = ctx.getImageData(0, 0, 32, 18).data;
+      let a = 5381;
+      let b = 52711;
+      for (let i = 0; i < data.length; i += 16) {
+        a = ((a << 5) + a + data[i]) >>> 0;
+        b = ((b << 5) + b + data[i + 1]) >>> 0;
+      }
+      return `${a.toString(36)}-${b.toString(36)}`;
+    } catch {
+      return null;
+    }
+  }
+
+  private maybeRecover(name: string, player: VideoRTC): void {
+    const offline = (this.offlineStrikes.get(name) ?? 0) >= 3;
+    if (!offline) {
+      return;
+    }
+    const now = Date.now();
+    if (now - (this.lastRecoveryAt.get(name) ?? 0) < this.RECOVER_INTERVAL_MS) {
+      return;
+    }
+    this.lastRecoveryAt.set(name, now);
+    try {
+      player.restart();
+    } catch (e) {
+      console.warn('[streams] recover failed for', name, e);
+    }
   }
 
   isOffline(streamName: string): boolean {
-    return (this.offlineStrikes.get(streamName) ?? 0) >= 3;
+    if (this.stoppedStreams.has(streamName)) {
+      return false;
+    }
+    if ((this.offlineStrikes.get(streamName) ?? 0) >= 3) {
+      return true;
+    }
+    const state = this.frameStates.get(streamName);
+    return !!state && state.count >= this.frozenSeconds;
+  }
+
+  offlineLabel(streamName: string): string {
+    const state = this.frameStates.get(streamName);
+    if (state && state.count >= this.frozenSeconds) {
+      return 'FRAME CONGELADO';
+    }
+    return 'SEM SINAL';
+  }
+
+  private playerFor(streamName: string): VideoRTC | undefined {
+    const index = this.streams.findIndex((s) => s.name === streamName);
+    if (index >= 0 && index < this.players.length) {
+      return this.players[index];
+    }
+    if (this.expanded?.name === streamName) {
+      return this.expandedPlayer ?? undefined;
+    }
+    return undefined;
+  }
+
+  isStopped(streamName: string): boolean {
+    return this.stoppedStreams.has(streamName);
+  }
+
+  isPaused(streamName: string): boolean {
+    if (this.isStopped(streamName)) {
+      return false;
+    }
+    const player = this.playerFor(streamName);
+    return !!player && !!player.video && player.video.paused;
+  }
+
+  togglePlay(streamName: string, event: Event): void {
+    event.stopPropagation();
+    const player = this.playerFor(streamName);
+    if (!player) {
+      return;
+    }
+    if (this.stoppedStreams.has(streamName)) {
+      this.stoppedStreams.delete(streamName);
+      this.offlineStrikes.delete(streamName);
+      this.frameStates.delete(streamName);
+      try {
+        player.restart();
+      } catch (e) {
+        console.warn('[streams] restart failed for', streamName, e);
+      }
+      return;
+    }
+    if (player.video && player.video.paused) {
+      player.play();
+    } else if (player.video) {
+      player.video.pause();
+    }
+  }
+
+  stopStream(streamName: string, event: Event): void {
+    event.stopPropagation();
+    const player = this.playerFor(streamName);
+    if (!player) {
+      return;
+    }
+    this.stoppedStreams.add(streamName);
+    this.offlineStrikes.delete(streamName);
+    this.frameStates.delete(streamName);
+    try {
+      player.stop();
+    } catch (e) {
+      console.warn('[streams] stop failed for', streamName, e);
+    }
   }
 
   detectionFor(streamName: string): string | undefined {
@@ -208,7 +408,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   openStream(stream: CameraStream, event: Event): void {
-    if (this.expandedOverlay) {
+    if (this.expandedOverlay || this.presentationMode) {
       return;
     }
     const tile = event.currentTarget as HTMLElement;
@@ -239,12 +439,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     overlay.style.transition = 'none';
 
     const player = this.createPlayer(stream.name, true);
+    this.expandedPlayer = player;
     overlay.appendChild(player);
 
     const label = document.createElement('span');
     label.className = 'expanded-label';
     label.textContent = stream.name;
     overlay.appendChild(label);
+
+    overlay.appendChild(this.buildExpandedControls(stream.name));
 
     overlay.addEventListener('click', () => this.closeExpanded());
 
@@ -258,12 +461,82 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  private buildExpandedControls(streamName: string): HTMLElement {
+    const controls = document.createElement('div');
+    controls.className = 'expanded-controls';
+
+    const playBtn = document.createElement('button');
+    playBtn.className = 'expanded-btn';
+    playBtn.innerHTML = this.playPauseIcon(true);
+    playBtn.title = 'Pausar';
+    playBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const player = this.playerFor(streamName);
+      if (!player || !player.video) {
+        return;
+      }
+      const willPause = !player.video.paused;
+      if (willPause) {
+        player.video.pause();
+      } else if (this.isStopped(streamName)) {
+        this.togglePlay(streamName, e);
+      } else {
+        player.play();
+      }
+      playBtn.innerHTML = this.playPauseIcon(!willPause);
+      playBtn.title = willPause ? 'Reproduzir' : 'Pausar';
+    });
+    controls.appendChild(playBtn);
+
+    const stopBtn = document.createElement('button');
+    stopBtn.className = 'expanded-btn';
+    stopBtn.title = 'Parar';
+    stopBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>';
+    stopBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isStopped(streamName)) {
+        this.togglePlay(streamName, e);
+      } else {
+        this.stopStream(streamName, e);
+      }
+    });
+    controls.appendChild(stopBtn);
+
+    const muteBtn = document.createElement('button');
+    muteBtn.className = 'expanded-btn';
+    muteBtn.title = 'Mudo';
+    muteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+    muteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const player = this.playerFor(streamName);
+      if (!player || !player.video) {
+        return;
+      }
+player.video.muted = !player.video.muted;
+      muteBtn.innerHTML = player.video.muted
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+      muteBtn.title = player.video.muted ? 'Com som' : 'Mudo';
+    });
+    controls.appendChild(muteBtn);
+
+    return controls;
+  }
+
+  private playPauseIcon(isPause: boolean): string {
+    if (isPause) {
+      return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>';
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>';
+  }
+
   private closeExpanded(): void {
     if (!this.expandedOverlay) {
       return;
     }
     const overlay = this.expandedOverlay;
     this.expanded = null;
+    this.expandedPlayer = null;
     overlay.style.transform = this.expandedStartTransform;
     const toRemove = overlay;
     setTimeout(() => {
@@ -290,6 +563,16 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   closeConfigModal(): void {
     this.configModalOpen = false;
     this.loadStreams();
+  }
+
+  enterPresentation(): void {
+    this.presentationMode = true;
+    this.closeMenu();
+    this.closeExpanded();
+  }
+
+  exitPresentation(): void {
+    this.presentationMode = false;
   }
 
   toggleTheme(): void {

@@ -102,3 +102,35 @@ html, body {
   letter-spacing: 0.4px;
   pointer-events: none;
 }
+
+.expanded-view .expanded-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 5;
+}
+
+.expanded-view .expanded-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.expanded-view .expanded-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.expanded-view .expanded-btn svg {
+  display: block;
+}

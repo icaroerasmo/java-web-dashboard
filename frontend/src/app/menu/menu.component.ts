@@ -11,10 +11,16 @@ import { CommonModule } from '@angular/common';
 export class MenuComponent {
   @Input() open = false;
   @Output() openConfigs = new EventEmitter<void>();
+  @Output() openPresentation = new EventEmitter<void>();
   @Output() close = new EventEmitter<void>();
 
   onOpenConfigs(): void {
     this.openConfigs.emit();
+    this.close.emit();
+  }
+
+  onOpenPresentation(): void {
+    this.openPresentation.emit();
     this.close.emit();
   }
 
