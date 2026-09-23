@@ -224,11 +224,19 @@ input[type="checkbox"] {
   }
 
   .array-item {
-    padding: 8px 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
   }
 
   .section-block {
-    padding: 12px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    margin-top: 14px;
+  }
+
+  .section-block > .section-label {
+    margin-bottom: 8px;
   }
 
   .add-btn,
