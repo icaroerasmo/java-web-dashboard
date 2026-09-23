@@ -60,10 +60,10 @@
                 <tbody>
                   @for (env of envVars; track $index) {
                     <tr>
-                      <td>
+                      <td data-label="KEY">
                         <input class="env-input" [(ngModel)]="env.key" placeholder="VARIABLE_NAME" />
                       </td>
-                      <td>
+                      <td data-label="VALUE">
                         <div class="env-secret-wrapper">
                           @if (env.secret && !isSecretRevealed($index)) {
                             <input class="env-input env-input-secret" [value]="env.value" (input)="env.value = $any($event.target).value" type="password" placeholder="value" />
@@ -89,7 +89,7 @@
                           }
                         </div>
                       </td>
-                      <td class="env-col-secret">
+                      <td data-label="SECRET" class="env-col-secret">
                         <label class="secret-toggle">
                           <input type="checkbox" [(ngModel)]="env.secret" (change)="env.secret ? revealedSecrets.add($index) : revealedSecrets.delete($index)" />
                           <span class="secret-slider"></span>
