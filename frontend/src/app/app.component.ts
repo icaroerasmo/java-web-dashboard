@@ -699,6 +699,7 @@ player.video.muted = !player.video.muted;
 
   openNotifications(): void {
     this.notificationsOpen = true;
+    this.requestNotificationPermission();
   }
 
   closeNotifications(): void {
@@ -713,9 +714,6 @@ player.video.muted = !player.video.muted;
     this.notificationWebSocketService.messages().subscribe((summary) => {
       this.showBrowserNotification(summary);
     });
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().catch(() => {});
-    }
   }
 
   private showBrowserNotification(summary: NotificationSummary): void {
@@ -726,12 +724,26 @@ player.video.muted = !player.video.muted;
       return;
     }
     try {
-      new Notification(summary.summary || 'Nova notificação', {
+      const notification = new Notification(summary.summary || 'Nova notificação', {
         body: summary.sender,
         tag: summary.id
       });
+      notification.onclick = () => {
+        window.focus();
+        this.openNotifications();
+        notification.close();
+      };
     } catch (e) {
       // ignore notification failures
+    }
+  }
+
+  private requestNotificationPermission(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
     }
   }
 

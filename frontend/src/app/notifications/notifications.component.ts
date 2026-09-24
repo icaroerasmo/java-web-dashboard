@@ -1,7 +1,9 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { NotificationService, NotificationSummary } from '../services/notification.service';
+import { NotificationWebSocketService } from '../services/notification-websocket.service';
 
 @Component({
   selector: 'app-notifications',
@@ -22,11 +24,17 @@ export class NotificationsComponent implements OnChanges {
   selectedHour = '';
   expandedId: string | null = null;
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService,
+    private ws: NotificationWebSocketService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['open'] && this.open) {
       this.loadHistory();
+      this.subscribeToLive();
+    } else if (changes['open'] && !this.open) {
+      this.unsubscribeFromLive();
     }
   }
 
@@ -35,6 +43,27 @@ export class NotificationsComponent implements OnChanges {
       this.all = list;
       this.recomputeKinds();
     });
+  }
+
+  private liveSub: Subscription | null = null;
+
+  private subscribeToLive(): void {
+    if (this.liveSub) {
+      return;
+    }
+    this.liveSub = this.ws.messages().subscribe((summary) => {
+      if (summary && summary.id && !this.all.some((n) => n.id === summary.id)) {
+        this.all.unshift(summary);
+        this.recomputeKinds();
+      }
+    });
+  }
+
+  private unsubscribeFromLive(): void {
+    if (this.liveSub) {
+      this.liveSub.unsubscribe();
+      this.liveSub = null;
+    }
   }
 
   private recomputeKinds(): void {
