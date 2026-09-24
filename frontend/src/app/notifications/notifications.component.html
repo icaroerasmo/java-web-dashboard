@@ -51,11 +51,26 @@
           </div>
           <div class="log-list">
             @for (n of filteredLogs(); track n.id) {
-              <div class="log-item">
-                <span class="log-time">{{ timeOf(n) }}</span>
-                <span class="log-summary">{{ n.summary }}</span>
-                @if (n.fileId) {
-                  <a class="log-open" (click)="openMedia(n)">Abrir log</a>
+              <div class="log-entry">
+                <div class="log-item">
+                  <span class="log-time">{{ timeOf(n) }}</span>
+                  <span class="log-kind">{{ n.kind }}</span>
+                  <span class="log-filename">{{ n.filename }}</span>
+                  <div class="log-actions">
+                    @if (n.fileId) {
+                      <button class="log-toggle" (click)="toggleLog(n)">{{ isLogExpanded(n) ? 'Ocultar log' : 'Ver log' }}</button>
+                      <a class="log-open" [href]="mediaUrl(n)">Baixar</a>
+                    }
+                  </div>
+                </div>
+                @if (isLogExpanded(n)) {
+                  <div class="log-content-wrap">
+                    @if (isLogLoading(n)) {
+                      <div class="log-loading">Carregando…</div>
+                    } @else {
+                      <pre class="log-content">{{ logContent(n) }}</pre>
+                    }
+                  </div>
                 }
               </div>
             }
