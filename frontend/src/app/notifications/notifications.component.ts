@@ -41,11 +41,11 @@ export class NotificationsComponent implements OnChanges {
   }
 
   logs(): NotificationSummary[] {
-    return this.all.filter((n) => n.mediaType === 'TEXT');
+    return this.all.filter((n) => n.mediaType === 'TEXT' || n.mediaType === 'DOCUMENT');
   }
 
   media(): NotificationSummary[] {
-    return this.all.filter((n) => n.mediaType !== 'TEXT');
+    return this.all.filter((n) => n.mediaType === 'PHOTO' || n.mediaType === 'ANIMATION');
   }
 
   selectTab(tab: 'notifications' | 'logs'): void {
@@ -60,8 +60,9 @@ export class NotificationsComponent implements OnChanges {
     if (this.selectedDate) {
       list = list.filter((l) => this.dateOf(l) === this.selectedDate);
     }
-    if (this.selectedHour !== '') {
-      list = list.filter((l) => this.hourOf(l) === this.selectedHour);
+    if (this.selectedHour !== '' && this.selectedHour !== null && this.selectedHour !== undefined) {
+      const hour = String(this.selectedHour).padStart(2, '0');
+      list = list.filter((l) => this.hourOf(l) === hour);
     }
     return list;
   }
@@ -77,6 +78,17 @@ export class NotificationsComponent implements OnChanges {
 
   mediaUrl(n: NotificationSummary): string | null {
     return n.fileId ? this.notificationService.mediaUrl(n.fileId) : null;
+  }
+
+  isDocument(n: NotificationSummary): boolean {
+    return n.mediaType === 'DOCUMENT';
+  }
+
+  openMedia(n: NotificationSummary): void {
+    const url = this.mediaUrl(n);
+    if (url) {
+      window.open(url, '_blank');
+    }
   }
 
   senderLabel(sender: string): string {
