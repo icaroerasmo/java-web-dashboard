@@ -170,6 +170,43 @@
   white-space: nowrap;
 }
 
+.expand-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 2px 6px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.expand-btn:hover {
+  color: var(--text);
+}
+
+.expanded-media {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.expanded-video,
+.expanded-img {
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #000;
+}
+
+.expanded-text {
+  color: var(--text-secondary);
+  font-size: 13px;
+  word-break: break-word;
+}
+
 .empty {
   color: var(--text-faint);
   font-size: 14px;

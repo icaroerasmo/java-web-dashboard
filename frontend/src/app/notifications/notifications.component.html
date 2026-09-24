@@ -11,11 +11,25 @@
       @if (tab === 'notifications') {
         <div class="content">
           @for (n of notifications(); track n.id) {
-            <div class="log-item">
-              <span class="log-time">{{ timeOf(n) }}</span>
-              <span class="log-summary">{{ n.summary }}</span>
-              @if (isMedia(n) && n.fileId) {
-                <a class="log-open" (click)="openMedia(n)">Ver mídia</a>
+            <div class="notif-item">
+              <div class="log-item">
+                <span class="log-time">{{ timeOf(n) }}</span>
+                <span class="log-summary">{{ n.summary }}</span>
+                @if (isMedia(n) && n.fileId) {
+                  <button class="expand-btn" (click)="toggleExpand(n)" [attr.aria-expanded]="isExpanded(n)">
+                    {{ isExpanded(n) ? '▲' : '▼' }}
+                  </button>
+                }
+              </div>
+              @if (isExpanded(n) && isMedia(n) && n.fileId) {
+                <div class="expanded-media">
+                  @if (n.mediaType === 'ANIMATION') {
+                    <video [src]="mediaUrl(n)" controls autoplay muted loop playsinline class="expanded-video"></video>
+                  } @else {
+                    <img [src]="mediaUrl(n)" class="expanded-img" alt="" />
+                  }
+                  <div class="expanded-text">{{ n.summary }}</div>
+                </div>
               }
             </div>
           }
