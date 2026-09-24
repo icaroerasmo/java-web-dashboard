@@ -27,4 +27,8 @@ export class NotificationService {
   mediaUrl(fileId: string): string {
     return `/api/notifications/media/${encodeURIComponent(fileId)}`;
   }
+
+  getMediaText(fileId: string): Observable<string> {
+    return this.http.get(this.mediaUrl(fileId), { responseType: 'text' });
+  }
 }

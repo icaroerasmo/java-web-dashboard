@@ -23,6 +23,9 @@ export class NotificationsComponent implements OnChanges {
   selectedDate = '';
   selectedHour = '';
   expandedId: string | null = null;
+  expandedLogId: string | null = null;
+  loadingLogId: string | null = null;
+  private logContents = new Map<string, string>();
 
   constructor(
     private notificationService: NotificationService,
@@ -75,7 +78,7 @@ export class NotificationsComponent implements OnChanges {
   }
 
   notifications(): NotificationSummary[] {
-    return this.all.filter((n) => n.mediaType !== 'DOCUMENT');
+    return this.all;
   }
 
   selectTab(tab: 'notifications' | 'logs'): void {
@@ -122,6 +125,43 @@ export class NotificationsComponent implements OnChanges {
     if (url) {
       window.open(url, '_blank');
     }
+  }
+
+  isLogExpanded(n: NotificationSummary): boolean {
+    return this.expandedLogId === n.id;
+  }
+
+  isLogLoading(n: NotificationSummary): boolean {
+    return this.loadingLogId === n.id;
+  }
+
+  logContent(n: NotificationSummary): string {
+    return this.logContents.get(n.id) ?? '';
+  }
+
+  toggleLog(n: NotificationSummary): void {
+    if (this.isLogExpanded(n)) {
+      this.expandedLogId = null;
+      return;
+    }
+    this.expandedLogId = n.id;
+    if (!this.logContents.has(n.id) && n.fileId) {
+      this.loadLogContent(n);
+    }
+  }
+
+  private loadLogContent(n: NotificationSummary): void {
+    this.loadingLogId = n.id;
+    this.notificationService.getMediaText(n.fileId!).subscribe({
+      next: (text) => {
+        this.logContents.set(n.id, text);
+        this.loadingLogId = null;
+      },
+      error: () => {
+        this.logContents.set(n.id, '(falha ao carregar o conteúdo do log)');
+        this.loadingLogId = null;
+      }
+    });
   }
 
   senderLabel(sender: string): string {
