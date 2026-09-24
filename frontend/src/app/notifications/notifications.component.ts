@@ -41,11 +41,11 @@ export class NotificationsComponent implements OnChanges {
   }
 
   logs(): NotificationSummary[] {
-    return this.all.filter((n) => n.mediaType === 'TEXT' || n.mediaType === 'DOCUMENT');
+    return this.all.filter((n) => n.mediaType === 'DOCUMENT');
   }
 
-  media(): NotificationSummary[] {
-    return this.all.filter((n) => n.mediaType === 'PHOTO' || n.mediaType === 'ANIMATION');
+  notifications(): NotificationSummary[] {
+    return this.all.filter((n) => n.mediaType !== 'DOCUMENT');
   }
 
   selectTab(tab: 'notifications' | 'logs'): void {
@@ -58,30 +58,25 @@ export class NotificationsComponent implements OnChanges {
       list = list.filter((l) => (l.kind ?? 'sem categoria') === this.selectedKind);
     }
     if (this.selectedDate) {
-      list = list.filter((l) => this.dateOf(l) === this.selectedDate);
+      list = list.filter((l) => l.date === this.selectedDate);
     }
     if (this.selectedHour !== '' && this.selectedHour !== null && this.selectedHour !== undefined) {
       const hour = String(this.selectedHour).padStart(2, '0');
-      list = list.filter((l) => this.hourOf(l) === hour);
+      list = list.filter((l) => l.hour === hour);
     }
     return list;
   }
 
-  dateOf(n: NotificationSummary): string {
-    const d = new Date(n.timestamp);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
-
-  hourOf(n: NotificationSummary): string {
-    return String(new Date(n.timestamp).getHours()).padStart(2, '0');
-  }
-
   mediaUrl(n: NotificationSummary): string | null {
-    return n.fileId ? this.notificationService.mediaUrl(n.fileId) : null;
+    if (!n.fileId) {
+      return null;
+    }
+    const base = this.notificationService.mediaUrl(n.fileId);
+    return n.filename ? `${base}?filename=${encodeURIComponent(n.filename)}` : base;
   }
 
-  isDocument(n: NotificationSummary): boolean {
-    return n.mediaType === 'DOCUMENT';
+  isMedia(n: NotificationSummary): boolean {
+    return n.mediaType === 'PHOTO' || n.mediaType === 'ANIMATION';
   }
 
   openMedia(n: NotificationSummary): void {

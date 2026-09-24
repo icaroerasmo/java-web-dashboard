@@ -9,8 +9,11 @@ export interface NotificationSummary {
   kind: string | null;
   summary: string;
   fileId: string | null;
-  sentAt: string;
+  filename: string | null;
+  sentAt: string | null;
   timestamp: number;
+  date: string | null;
+  hour: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

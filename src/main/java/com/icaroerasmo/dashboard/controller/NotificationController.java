@@ -46,10 +46,15 @@ public class NotificationController {
     }
 
     @GetMapping("/notifications/media/{fileId}")
-    public ResponseEntity<byte[]> getMedia(@PathVariable String fileId) {
+    public ResponseEntity<byte[]> getMedia(@PathVariable String fileId,
+                                           @RequestParam(value = "filename", required = false) String filename) {
         try {
+            String url = notifierBaseUrl + "/api/media/" + fileId;
+            if (filename != null && !filename.isBlank()) {
+                url += "?filename=" + java.net.URLEncoder.encode(filename, java.nio.charset.StandardCharsets.UTF_8);
+            }
             return restClient.get()
-                    .uri(notifierBaseUrl + "/api/media/" + fileId)
+                    .uri(java.net.URI.create(url))
                     .retrieve()
                     .toEntity(byte[].class);
         } catch (Exception e) {
