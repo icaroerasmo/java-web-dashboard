@@ -84,6 +84,12 @@
   background: var(--surface-subtle);
   border: 1px solid var(--border);
   border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.card:hover {
+  border-color: var(--border-strong);
 }
 
 .media {
@@ -152,6 +158,16 @@
   color: var(--text-secondary);
   font-size: 13px;
   word-break: break-word;
+  flex: 1;
+}
+
+.log-open {
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .empty {

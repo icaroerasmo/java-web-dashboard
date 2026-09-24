@@ -11,7 +11,7 @@
       @if (tab === 'notifications') {
         <div class="content">
           @for (n of media(); track n.id) {
-            <div class="card">
+            <div class="card" (click)="openMedia(n)">
               @if (n.fileId) {
                 @if (n.mediaType === 'ANIMATION') {
                   <video [src]="mediaUrl(n)" muted loop playsinline class="media"></video>
@@ -46,6 +46,9 @@
               <div class="log-item">
                 <span class="log-time">{{ timeOf(n) }}</span>
                 <span class="log-summary">{{ n.summary }}</span>
+                @if (isDocument(n) && n.fileId) {
+                  <a class="log-open" (click)="openMedia(n)">Abrir log</a>
+                }
               </div>
             }
             @if (filteredLogs().length === 0) {
