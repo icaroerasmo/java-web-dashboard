@@ -20,6 +20,7 @@ export class NotificationsComponent implements OnChanges {
   selectedKind = 'all';
   selectedDate = '';
   selectedHour = '';
+  expandedId: string | null = null;
 
   constructor(private notificationService: NotificationService) {}
 
@@ -77,6 +78,14 @@ export class NotificationsComponent implements OnChanges {
 
   isMedia(n: NotificationSummary): boolean {
     return n.mediaType === 'PHOTO' || n.mediaType === 'ANIMATION';
+  }
+
+  isExpanded(n: NotificationSummary): boolean {
+    return this.expandedId === n.id;
+  }
+
+  toggleExpand(n: NotificationSummary): void {
+    this.expandedId = this.isExpanded(n) ? null : n.id;
   }
 
   openMedia(n: NotificationSummary): void {
