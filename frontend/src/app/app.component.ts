@@ -253,6 +253,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   private streamSource(streamName: string): string {
     const encoded = encodeURIComponent(streamName);
+    if (window.location.protocol === 'https:') {
+      return `wss://${window.location.host}/go2rtc/api/ws?src=${encoded}`;
+    }
     return `ws://${window.location.hostname}:1984/api/ws?src=${encoded}`;
   }
 
