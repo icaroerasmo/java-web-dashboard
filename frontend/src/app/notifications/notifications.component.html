@@ -23,11 +23,7 @@
               </div>
               @if (isExpanded(n) && isMedia(n) && n.fileId) {
                 <div class="expanded-media">
-                  @if (n.mediaType === 'ANIMATION') {
-                    <video [src]="mediaUrl(n)" controls autoplay muted loop playsinline class="expanded-video"></video>
-                  } @else {
-                    <img [src]="mediaUrl(n)" class="expanded-img" alt="" />
-                  }
+                <img [src]="mediaUrl(n)" class="expanded-img" alt="" />
                   <div class="expanded-text">{{ n.summary }}</div>
                 </div>
               }
