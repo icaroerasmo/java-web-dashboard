@@ -15,6 +15,9 @@ public class RabbitMqConfig {
     public static final String DETECTION_EXCHANGE = "detection.exchange";
     public static final String DETECTION_ROUTING_KEY = "detection.events";
     public static final String DASHBOARD_DETECTION_QUEUE = "dashboard.detection.events";
+    public static final String DASHBOARD_EXCHANGE = "dashboard.exchange";
+    public static final String DASHBOARD_NOTIFICATIONS_QUEUE = "dashboard.notifications";
+    public static final String DASHBOARD_NOTIFICATIONS_ROUTING_KEY = "dashboard.notifications";
 
     @Bean
     public DirectExchange detectionExchange() {
@@ -29,6 +32,21 @@ public class RabbitMqConfig {
     @Bean
     public Binding dashboardDetectionBinding(DirectExchange detectionExchange, Queue dashboardDetectionQueue) {
         return BindingBuilder.bind(dashboardDetectionQueue).to(detectionExchange).with(DETECTION_ROUTING_KEY);
+    }
+
+    @Bean
+    public DirectExchange dashboardExchange() {
+        return new DirectExchange(DASHBOARD_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public Queue dashboardNotificationsQueue() {
+        return new Queue(DASHBOARD_NOTIFICATIONS_QUEUE, true);
+    }
+
+    @Bean
+    public Binding dashboardNotificationsBinding(DirectExchange dashboardExchange, Queue dashboardNotificationsQueue) {
+        return BindingBuilder.bind(dashboardNotificationsQueue).to(dashboardExchange).with(DASHBOARD_NOTIFICATIONS_ROUTING_KEY);
     }
 
     @Bean

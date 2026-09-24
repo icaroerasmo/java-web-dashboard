@@ -4,6 +4,9 @@ import { MenuComponent } from './menu/menu.component';
 import { ConfigModalComponent } from './config-modal/config-modal.component';
 import { ConfigService } from './services/config.service';
 import { DetectionWebSocketService } from './services/detection-websocket.service';
+import { NotificationWebSocketService } from './services/notification-websocket.service';
+import { NotificationSummary } from './services/notification.service';
+import { NotificationsComponent } from './notifications/notifications.component';
 import { computeGrid, CameraGrid } from './services/grid-layout';
 import { buildDetectionMap } from './services/detection-map';
 
@@ -22,7 +25,7 @@ interface CameraStream {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MenuComponent, ConfigModalComponent],
+  imports: [CommonModule, MenuComponent, ConfigModalComponent, NotificationsComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -32,6 +35,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   menuOpen = false;
   configModalOpen = false;
+  notificationsOpen = false;
   theme: 'dark' | 'light' = 'dark';
   presentationMode = false;
 
@@ -88,6 +92,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   constructor(
     private configService: ConfigService,
     private detectionWebSocketService: DetectionWebSocketService,
+    private notificationWebSocketService: NotificationWebSocketService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     const saved = localStorage.getItem('dashboard-theme');
@@ -116,6 +121,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.loadStreams();
     this.startDetectionSocket();
     this.startHealthChecks();
+    this.setupNotifications();
     window.addEventListener('keydown', this.onKeydown);
     this.watchGridResize();
   }
@@ -133,6 +139,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     window.removeEventListener('keydown', this.onKeydown);
     this.detectionWebSocketService.disconnect();
+    this.notificationWebSocketService.disconnect();
     this.stopHealthChecks();
     this.disposePlayers();
     this.gridObserver?.disconnect();
@@ -688,6 +695,44 @@ player.video.muted = !player.video.muted;
   closeConfigModal(): void {
     this.configModalOpen = false;
     this.loadStreams();
+  }
+
+  openNotifications(): void {
+    this.notificationsOpen = true;
+  }
+
+  closeNotifications(): void {
+    this.notificationsOpen = false;
+  }
+
+  private setupNotifications(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    this.notificationWebSocketService.connect();
+    this.notificationWebSocketService.messages().subscribe((summary) => {
+      this.showBrowserNotification(summary);
+    });
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+  }
+
+  private showBrowserNotification(summary: NotificationSummary): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    if (!('Notification' in window) || Notification.permission !== 'granted') {
+      return;
+    }
+    try {
+      new Notification(summary.summary || 'Nova notificação', {
+        body: summary.sender,
+        tag: summary.id
+      });
+    } catch (e) {
+      // ignore notification failures
+    }
   }
 
   enterPresentation(): void {

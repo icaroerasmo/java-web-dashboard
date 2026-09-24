@@ -137,6 +137,7 @@
   [open]="menuOpen"
   (openConfigs)="openConfigs()"
   (openPresentation)="enterPresentation()"
+  (openNotifications)="openNotifications()"
   (close)="closeMenu()"
 />
 
@@ -144,4 +145,10 @@
 <app-config-modal
   [open]="configModalOpen"
   (close)="closeConfigModal()"
+/>
+
+<!-- Notifications -->
+<app-notifications
+  [open]="notificationsOpen"
+  (close)="closeNotifications()"
 />

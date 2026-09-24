@@ -12,6 +12,7 @@ export class MenuComponent {
   @Input() open = false;
   @Output() openConfigs = new EventEmitter<void>();
   @Output() openPresentation = new EventEmitter<void>();
+  @Output() openNotifications = new EventEmitter<void>();
   @Output() close = new EventEmitter<void>();
 
   onOpenConfigs(): void {
@@ -21,6 +22,11 @@ export class MenuComponent {
 
   onOpenPresentation(): void {
     this.openPresentation.emit();
+    this.close.emit();
+  }
+
+  onOpenNotifications(): void {
+    this.openNotifications.emit();
     this.close.emit();
   }
 

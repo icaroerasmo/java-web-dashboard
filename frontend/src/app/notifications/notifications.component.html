@@ -1,0 +1,59 @@
+@if (open) {
+  <div class="modal-backdrop" (click)="onClose()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <button class="close-btn" (click)="onClose()">&times;</button>
+
+      <div class="tabs-row">
+        <button class="tab-btn" [class.active]="tab === 'notifications'" (click)="selectTab('notifications')">Notificações</button>
+        <button class="tab-btn" [class.active]="tab === 'logs'" (click)="selectTab('logs')">Logs</button>
+      </div>
+
+      @if (tab === 'notifications') {
+        <div class="content">
+          @for (n of media(); track n.id) {
+            <div class="card">
+              @if (n.fileId) {
+                @if (n.mediaType === 'ANIMATION') {
+                  <video [src]="mediaUrl(n)" muted loop playsinline class="media"></video>
+                } @else {
+                  <img [src]="mediaUrl(n)" class="media" alt="" />
+                }
+              }
+              <div class="card-body">
+                <div class="card-summary">{{ n.summary }}</div>
+                <div class="card-meta">{{ senderLabel(n.sender) }} · {{ timeOf(n) }}</div>
+              </div>
+            </div>
+          }
+          @if (media().length === 0) {
+            <div class="empty">Sem notificações</div>
+          }
+        </div>
+      } @else {
+        <div class="content">
+          <div class="filters">
+            <select [(ngModel)]="selectedKind">
+              <option value="all">Todos os tipos</option>
+              @for (k of kinds; track k) {
+                <option [value]="k">{{ k }}</option>
+              }
+            </select>
+            <input type="date" [(ngModel)]="selectedDate" />
+            <input type="number" min="0" max="23" [(ngModel)]="selectedHour" placeholder="Hora" />
+          </div>
+          <div class="log-list">
+            @for (n of filteredLogs(); track n.id) {
+              <div class="log-item">
+                <span class="log-time">{{ timeOf(n) }}</span>
+                <span class="log-summary">{{ n.summary }}</span>
+              </div>
+            }
+            @if (filteredLogs().length === 0) {
+              <div class="empty">Sem logs</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}
