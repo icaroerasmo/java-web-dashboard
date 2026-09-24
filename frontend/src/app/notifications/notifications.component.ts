@@ -40,7 +40,7 @@ export class NotificationsComponent implements OnChanges {
 
   private loadHistory(): void {
     this.notificationService.getNotifications(300).subscribe((list) => {
-      this.all = list;
+      this.all = list.sort((a, b) => b.timestamp - a.timestamp);
       this.recomputeKinds();
     });
   }
