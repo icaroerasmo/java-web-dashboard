@@ -52,7 +52,7 @@ public class Go2RtcController {
                     String name = entry.getKey();
                     Map<String, String> item = new LinkedHashMap<>();
                     item.put("name", name);
-                    item.put("url", go2RtcUrl(name));
+                    item.put("url", sourceUrl(entry.getValue()));
                     result.add(item);
                 }
             }
@@ -130,16 +130,15 @@ public class Go2RtcController {
         }
     }
 
-    private String go2RtcUrl(String name) {
-        String base = properties.getGo2rtc().getBaseUrl();
-        String host = base.replaceFirst("^[a-zA-Z]+://", "");
-        if (host.contains("/")) {
-            host = host.substring(0, host.indexOf('/'));
+    private String sourceUrl(Map<String, Object> stream) {
+        Object producers = stream.get("producers");
+        if (producers instanceof List<?> list && !list.isEmpty() && list.get(0) instanceof Map<?, ?> first) {
+            Object url = first.get("url");
+            if (url != null) {
+                return String.valueOf(url);
+            }
         }
-        if (host.contains(":")) {
-            host = host.substring(0, host.lastIndexOf(':'));
-        }
-        return "rtsp://" + host + ":8554/" + name;
+        return "";
     }
 
     private String encodeQuery(String value) {

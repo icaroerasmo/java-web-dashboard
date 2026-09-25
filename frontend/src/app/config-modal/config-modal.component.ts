@@ -49,6 +49,7 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
   go2rtcOriginalNames: string[] = [];
   go2rtcLoading = false;
   go2rtcSaving = false;
+  revealedGo2rtcUrls = new Set<number>();
 
   private pollTimer: any = null;
 
@@ -358,7 +359,7 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
       next: (streams) => {
         this.go2rtcStreams = streams.map((s: any) => ({
           name: s.name,
-          url: ''
+          url: s.url || ''
         }));
         this.go2rtcOriginalNames = streams.map((s: any) => s.name);
         this.go2rtcLoading = false;
@@ -377,6 +378,19 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
 
   removeGo2RtcStream(index: number): void {
     this.go2rtcStreams.splice(index, 1);
+    this.revealedGo2rtcUrls.delete(index);
+  }
+
+  toggleGo2RtcReveal(index: number): void {
+    if (this.revealedGo2rtcUrls.has(index)) {
+      this.revealedGo2rtcUrls.delete(index);
+    } else {
+      this.revealedGo2rtcUrls.add(index);
+    }
+  }
+
+  isGo2RtcRevealed(index: number): boolean {
+    return this.revealedGo2rtcUrls.has(index);
   }
 
   saveGo2Rtc(): void {
