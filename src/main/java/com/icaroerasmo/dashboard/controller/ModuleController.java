@@ -6,6 +6,7 @@ import com.icaroerasmo.dashboard.service.EnvService;
 import com.icaroerasmo.dashboard.service.ModuleHealthService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.client.RestClient;
 import java.util.List;
 import java.util.Map;
 
+@Log4j2
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -52,6 +54,7 @@ public class ModuleController {
                     .retrieve()
                     .toEntity(Map.class);
         } catch (Exception e) {
+            log.warn("Failed to load config for module '{}' from {}: {}", name, baseUrl, e.getMessage());
             return ResponseEntity.status(502).build();
         }
     }
@@ -69,6 +72,7 @@ public class ModuleController {
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception e) {
+            log.warn("Failed to update config for module '{}' at {}: {}", name, baseUrl, e.getMessage());
             return ResponseEntity.status(502).build();
         }
     }
@@ -93,6 +97,7 @@ public class ModuleController {
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception e) {
+            log.warn("Failed to restart module '{}' at {}: {}", name, baseUrl, e.getMessage());
             return ResponseEntity.status(502).build();
         }
     }
@@ -105,6 +110,7 @@ public class ModuleController {
         try {
             return ResponseEntity.ok(envService.getEnvVars(name));
         } catch (Exception e) {
+            log.warn("Failed to load env vars for module '{}': {}", name, e.getMessage());
             return ResponseEntity.status(502).body(Map.of("error", e.getMessage()));
         }
     }
@@ -118,6 +124,7 @@ public class ModuleController {
             envService.updateEnvVars(name, envVars);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            log.warn("Failed to update env vars for module '{}': {}", name, e.getMessage());
             return ResponseEntity.status(502).body(Map.of("error", e.getMessage()));
         }
     }
@@ -127,6 +134,7 @@ public class ModuleController {
         try {
             return ResponseEntity.ok(envService.getGlobalEnvVars());
         } catch (Exception e) {
+            log.warn("Failed to load global env vars: {}", e.getMessage());
             return ResponseEntity.status(502).body(Map.of("error", e.getMessage()));
         }
     }
@@ -137,6 +145,7 @@ public class ModuleController {
             envService.updateGlobalEnvVars(envVars);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            log.warn("Failed to update global env vars: {}", e.getMessage());
             return ResponseEntity.status(502).body(Map.of("error", e.getMessage()));
         }
     }

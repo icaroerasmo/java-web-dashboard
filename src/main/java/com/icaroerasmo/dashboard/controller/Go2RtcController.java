@@ -4,6 +4,7 @@ import com.icaroerasmo.dashboard.config.DashboardProperties;
 import com.icaroerasmo.dashboard.service.EnvService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Log4j2
 @RestController
 @RequestMapping("/api/go2rtc")
 @RequiredArgsConstructor
@@ -56,6 +58,7 @@ public class Go2RtcController {
             }
             return ResponseEntity.ok(result);
         } catch (Exception e) {
+            log.warn("Failed to list go2rtc streams: {}", e.getMessage());
             return ResponseEntity.status(502).build();
         }
     }
@@ -80,6 +83,7 @@ public class Go2RtcController {
             }
             return ResponseEntity.status(502).build();
         } catch (Exception e) {
+            log.warn("Failed to save go2rtc stream '{}': {}", name, e.getMessage());
             return ResponseEntity.status(502).build();
         }
     }
@@ -98,6 +102,7 @@ public class Go2RtcController {
             }
             return ResponseEntity.status(502).build();
         } catch (Exception e) {
+            log.warn("Failed to remove go2rtc stream '{}': {}", name, e.getMessage());
             return ResponseEntity.status(502).build();
         }
     }
@@ -108,6 +113,7 @@ public class Go2RtcController {
             envService.restartService("go2rtc");
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            log.warn("Failed to restart go2rtc: {}", e.getMessage());
             return ResponseEntity.status(502).body(Map.of("error", e.getMessage()));
         }
     }
