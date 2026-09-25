@@ -412,6 +412,49 @@
   font-size: 14px;
 }
 
+.config-error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+}
+
+.config-error-title {
+  margin: 0;
+  color: #ef4444;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.config-error-hint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 440px;
+}
+
+.retry-btn {
+  margin-top: 6px;
+  padding: 8px 24px;
+  background: rgba(100, 180, 255, 0.2);
+  border: 1px solid rgba(100, 180, 255, 0.3);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.retry-btn:hover {
+  background: rgba(100, 180, 255, 0.3);
+}
+
 .mq-layout {
   display: flex;
   gap: 16px;
