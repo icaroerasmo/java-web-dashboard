@@ -49,10 +49,11 @@ public class ModuleController {
             return ResponseEntity.notFound().build();
         }
         try {
-            return restClient.get()
+            Map<?, ?> config = restClient.get()
                     .uri(baseUrl + "/api/config")
                     .retrieve()
-                    .toEntity(Map.class);
+                    .body(Map.class);
+            return ResponseEntity.ok(config);
         } catch (Exception e) {
             log.warn("Failed to load config for module '{}' from {}: {}", name, baseUrl, e.getMessage());
             return ResponseEntity.status(502).build();

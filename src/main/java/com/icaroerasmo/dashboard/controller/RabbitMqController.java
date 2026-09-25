@@ -76,12 +76,13 @@ public class RabbitMqController {
                     "count", count,
                     "ackmode", "ack_requeue_true",
                     "encoding", "auto");
-            return restClient.post()
+            List<?> messages = restClient.post()
                     .uri(URI.create(managementUrl() + "/api/queues/" + VHOST + "/" + encode(queue) + "/get"))
                     .headers(headers -> setAuth(headers))
                     .body(body)
                     .retrieve()
-                    .toEntity(List.class);
+                    .body(List.class);
+            return ResponseEntity.ok(messages);
         } catch (Exception e) {
             log.warn("Failed to read messages from rabbitmq queue '{}': {}", queue, e.getMessage());
             return ResponseEntity.status(502).build();
@@ -96,12 +97,13 @@ public class RabbitMqController {
                     "routing_key", queue,
                     "payload", request.getOrDefault("payload", ""),
                     "payload_encoding", "string");
-            return restClient.post()
+            Map<?, ?> response = restClient.post()
                     .uri(URI.create(managementUrl() + "/api/exchanges/" + VHOST + "/amq.default/publish"))
                     .headers(headers -> setAuth(headers))
                     .body(body)
                     .retrieve()
-                    .toEntity(Map.class);
+                    .body(Map.class);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.warn("Failed to send message to rabbitmq queue '{}': {}", queue, e.getMessage());
             return ResponseEntity.status(502).build();
