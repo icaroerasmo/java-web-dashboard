@@ -291,6 +291,13 @@
   text-align: center;
 }
 
+.loading-more {
+  color: var(--text-faint);
+  font-size: 13px;
+  padding: 12px;
+  text-align: center;
+}
+
 @media (max-width: 640px) {
   .modal-backdrop {
     padding: 0;

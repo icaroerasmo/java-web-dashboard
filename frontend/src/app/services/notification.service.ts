@@ -20,8 +20,9 @@ export interface NotificationSummary {
 export class NotificationService {
   constructor(private http: HttpClient) {}
 
-  getNotifications(limit = 300): Observable<NotificationSummary[]> {
-    return this.http.get<NotificationSummary[]>(`/api/notifications?limit=${limit}`);
+  getNotifications(limit = 100, before?: number): Observable<NotificationSummary[]> {
+    const params = before !== undefined ? `?limit=${limit}&before=${before}` : `?limit=${limit}`;
+    return this.http.get<NotificationSummary[]>(`/api/notifications${params}`);
   }
 
   mediaUrl(fileId: string): string {
