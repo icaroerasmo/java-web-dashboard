@@ -21,6 +21,7 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
   selectedTab: string | null = null;
   configs: Record<string, any> = {};
   loading: Record<string, boolean> = {};
+  configErrors: Record<string, boolean> = {};
   saving = false;
   savedMessage = '';
   restarting = false;
@@ -125,17 +126,27 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
         this.loadQueues();
       }
     } else if (!this.configs[name]) {
-      this.loading[name] = true;
-      this.configService.getConfig(name).subscribe({
-        next: (config) => {
-          this.configs[name] = config;
-          this.loading[name] = false;
-        },
-        error: () => {
-          this.loading[name] = false;
-        }
-      });
+      this.loadConfig(name);
     }
+  }
+
+  loadConfig(name: string): void {
+    this.loading[name] = true;
+    this.configErrors[name] = false;
+    this.configService.getConfig(name).subscribe({
+      next: (config) => {
+        this.configs[name] = config;
+        this.loading[name] = false;
+      },
+      error: () => {
+        this.loading[name] = false;
+        this.configErrors[name] = true;
+      }
+    });
+  }
+
+  retryConfig(name: string): void {
+    this.loadConfig(name);
   }
 
   loadGlobalEnv(): void {

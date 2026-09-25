@@ -277,6 +277,13 @@
           @if (loading[selectedTab]) {
             <div class="loading-state">Loading config...</div>
           }
+          @if (!loading[selectedTab] && configErrors[selectedTab]) {
+            <div class="config-error">
+              <p class="config-error-title">Could not load configuration</p>
+              <p class="config-error-hint">{{ selectedTab }} may be starting up or restarting. Please try again in a few seconds.</p>
+              <button class="retry-btn" (click)="retryConfig(selectedTab)">Retry</button>
+            </div>
+          }
           @if (configs[selectedTab]) {
             <div class="config-scroll">
               <app-dynamic-form
