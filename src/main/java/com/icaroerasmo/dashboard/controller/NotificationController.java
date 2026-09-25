@@ -32,10 +32,19 @@ public class NotificationController {
     }
 
     @GetMapping("/notifications")
-    public List<NotificationSummary> getNotifications(@RequestParam(defaultValue = "100") int limit) {
+    public List<NotificationSummary> getNotifications(@RequestParam(defaultValue = "100") int limit,
+                                                      @RequestParam(required = false) Long before) {
         try {
+            String url = notifierBaseUrl + "/api/notifications?limit={limit}";
+            Object[] params;
+            if (before != null) {
+                url += "&before={before}";
+                params = new Object[]{limit, before};
+            } else {
+                params = new Object[]{limit};
+            }
             NotificationSummary[] summaries = restClient.get()
-                    .uri(notifierBaseUrl + "/api/notifications?limit={limit}", limit)
+                    .uri(url, params)
                     .retrieve()
                     .body(NotificationSummary[].class);
             return summaries != null ? List.of(summaries) : List.of();

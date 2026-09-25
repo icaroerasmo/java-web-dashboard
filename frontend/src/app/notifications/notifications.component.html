@@ -9,7 +9,7 @@
       </div>
 
       @if (tab === 'notifications') {
-        <div class="content">
+        <div class="content" (scroll)="onScroll($event)">
           @for (n of notifications(); track n.id) {
             <div class="notif-item">
               <div class="log-item">
@@ -36,9 +36,12 @@
           @if (notifications().length === 0) {
             <div class="empty">Sem notificações</div>
           }
+          @if (loadingMore) {
+            <div class="loading-more">Carregando mais…</div>
+          }
         </div>
       } @else {
-        <div class="content">
+        <div class="content" (scroll)="onScroll($event)">
           <div class="filters">
             <select [(ngModel)]="selectedKind">
               <option value="all">Todos os tipos</option>
@@ -76,6 +79,9 @@
             }
             @if (filteredLogs().length === 0) {
               <div class="empty">Sem logs</div>
+            }
+            @if (loadingMore) {
+              <div class="loading-more">Carregando mais…</div>
             }
           </div>
         </div>

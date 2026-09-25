@@ -25,6 +25,9 @@ export class NotificationsComponent implements OnChanges {
   expandedId: string | null = null;
   expandedLogId: string | null = null;
   loadingLogId: string | null = null;
+  loadingMore = false;
+  hasMore = true;
+  private readonly pageSize = 100;
   private logContents = new Map<string, string>();
 
   constructor(
@@ -42,10 +45,51 @@ export class NotificationsComponent implements OnChanges {
   }
 
   private loadHistory(): void {
-    this.notificationService.getNotifications(300).subscribe((list) => {
+    this.hasMore = true;
+    this.loadingMore = false;
+    this.notificationService.getNotifications(this.pageSize).subscribe((list) => {
       this.all = list.sort((a, b) => b.timestamp - a.timestamp);
       this.recomputeKinds();
     });
+  }
+
+  loadMore(): void {
+    if (this.loadingMore || !this.hasMore || this.all.length === 0) {
+      return;
+    }
+    const oldest = this.all[this.all.length - 1]?.timestamp;
+    if (oldest === undefined) {
+      return;
+    }
+    this.loadingMore = true;
+    this.notificationService.getNotifications(this.pageSize, oldest).subscribe((list) => {
+      if (list.length === 0) {
+        this.hasMore = false;
+        this.loadingMore = false;
+        return;
+      }
+      const existing = new Set(this.all.map((n) => n.id));
+      const fresh = list.filter((n) => !existing.has(n.id));
+      const visibleBefore = this.tab === 'logs' ? this.filteredLogs().length : this.all.length;
+      this.all.push(...fresh);
+      this.all.sort((a, b) => b.timestamp - a.timestamp);
+      this.recomputeKinds();
+      if (list.length < this.pageSize) {
+        this.hasMore = false;
+      }
+      this.loadingMore = false;
+      const visibleAfter = this.tab === 'logs' ? this.filteredLogs().length : this.all.length;
+      if (this.hasMore && visibleAfter === visibleBefore) {
+        this.loadMore();
+      }
+    });
+  }
+
+  onScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 200) {
+      this.loadMore();
+    }
   }
 
   private liveSub: Subscription | null = null;
