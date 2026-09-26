@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.icaroerasmo</groupId>
     <artifactId>java-web-dashboard</artifactId>
-    <version>0.11.16</version>
+    <version>0.11.17</version>
     <name>java-web-dashboard</name>
     <description>Web dashboard for the camera stack</description>
     <properties>

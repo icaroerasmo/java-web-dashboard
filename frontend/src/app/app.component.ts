@@ -581,8 +581,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.expanded = { name: stream.name, url: stream.url };
 
     requestAnimationFrame(() => {
-      overlay.style.transition = 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease';
+      overlay.style.transition = 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, border-radius 0.55s cubic-bezier(0.4, 0, 0.2, 1)';
       overlay.style.transform = 'translate(0, 0) scale(1)';
+      overlay.style.borderRadius = '0';
     });
   }
 
@@ -672,6 +673,7 @@ player.video.muted = !player.video.muted;
     this.expandedTile = null;
     this.expandedOfflineOverlay = null;
     host.style.overflowY = '';
+    overlay.style.borderRadius = '8px';
     overlay.style.transform = toTransform;
     const toRemove = overlay;
     setTimeout(() => {
