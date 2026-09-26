@@ -272,7 +272,7 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
     });
   }
 
-  selectQueue(name: string): void {
+  selectQueue(name: string | null): void {
     this.selectedQueue = name;
     this.messages = [];
     this.mqInfoMessage = '';

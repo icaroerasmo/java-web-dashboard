@@ -455,63 +455,27 @@
   background: rgba(100, 180, 255, 0.3);
 }
 
-.mq-layout {
-  display: flex;
-  gap: 16px;
-  max-height: 55vh;
-}
-
-.mq-queues {
-  width: 240px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  overflow-y: auto;
-}
-
-.queue-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+.mq-select {
+  width: 100%;
   padding: 8px 12px;
-  background: var(--surface-subtle);
-  border: 1px solid var(--border);
+  background: var(--input-bg);
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
-  color: var(--text-secondary);
+  color: var(--text);
   font-size: 13px;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.2s, border-color 0.2s;
+  outline: none;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
 }
 
-.queue-item:hover {
-  background: var(--surface-hover);
+.mq-select:focus {
+  border-color: rgba(100, 180, 255, 0.5);
 }
 
-.queue-item.active {
-  background: rgba(100, 180, 255, 0.12);
-  border-color: rgba(100, 180, 255, 0.4);
-  color: var(--accent);
-}
-
-.queue-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.queue-badge {
-  flex-shrink: 0;
-  min-width: 22px;
-  padding: 1px 6px;
-  background: rgba(100, 180, 255, 0.15);
-  border-radius: 10px;
-  color: var(--accent);
-  font-size: 11px;
-  text-align: center;
+.mq-select option {
+  background: var(--input-bg);
+  color: var(--text);
 }
 
 .mq-panel {
@@ -888,7 +852,7 @@
   }
 
   .env-table td {
-    padding: 5px 0 5px 28px;
+    padding: 5px 0;
   }
 
   .env-table td::before {
@@ -914,24 +878,6 @@
 
   .env-table .env-col-secret {
     text-align: left;
-  }
-
-  .mq-layout {
-    flex-direction: column;
-    max-height: none;
-  }
-
-  .mq-queues {
-    width: 100%;
-    flex-direction: row;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar) transparent;
-  }
-
-  .queue-item {
-    flex-shrink: 0;
-    min-width: 160px;
   }
 
   .mq-row {
@@ -982,7 +928,8 @@
   .field-input,
   .field-select,
   .secret-field-wrapper,
-  .go2rtc-url {
+  .go2rtc-url,
+  .mq-select {
     max-width: 100%;
     width: 100%;
     font-size: 16px;
