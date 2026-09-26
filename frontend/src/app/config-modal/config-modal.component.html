@@ -63,11 +63,11 @@
               </div>
               @for (env of envVars; track $index) {
                 <div class="row g-2 align-items-center env-row mb-2">
-                  <div class="col-12 col-md-3">
+                  <div class="col-12 col-md-3 order-2 order-md-1">
                     <label class="d-md-none env-field-label">KEY</label>
                     <input class="env-input w-100" [(ngModel)]="env.key" placeholder="VARIABLE_NAME" />
                   </div>
-                  <div class="col-12 col-md-5">
+                  <div class="col-12 col-md-5 order-3 order-md-2">
                     <label class="d-md-none env-field-label">VALUE</label>
                     <div class="env-secret-wrapper">
                       @if (env.secret && !isSecretRevealed($index)) {
@@ -94,14 +94,14 @@
                       }
                     </div>
                   </div>
-                  <div class="col-12 col-md-2">
+                  <div class="col-12 col-md-2 order-1 order-md-3">
                     <label class="d-md-none env-field-label">SECRET</label>
                     <label class="secret-toggle">
                       <input type="checkbox" [(ngModel)]="env.secret" (change)="env.secret ? revealedSecrets.add($index) : revealedSecrets.delete($index)" />
                       <span class="secret-slider"></span>
                     </label>
                   </div>
-                  <div class="col-12 col-md-2 text-md-end">
+                  <div class="col-12 col-md-2 text-end order-4 order-md-4">
                     <button class="env-remove-btn" (click)="removeEnvVar($index)">&times;</button>
                   </div>
                 </div>

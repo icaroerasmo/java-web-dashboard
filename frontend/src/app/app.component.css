@@ -350,6 +350,46 @@
   display: block;
 }
 
+/* Top bar actions (refresh + theme) */
+.top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.refresh-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: background 0.2s, color 0.2s;
+}
+
+.refresh-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.refresh-btn svg {
+  display: block;
+}
+
+.refresh-btn.spinning .refresh-icon {
+  animation: refresh-spin 0.9s linear infinite;
+}
+
+@keyframes refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 640px) {
   .camera-wall {
     display: flex;
@@ -373,6 +413,10 @@
 
   .hamburger.open {
     transform: none;
+  }
+
+  .refresh-btn {
+    display: none;
   }
 
   .tile-label {
