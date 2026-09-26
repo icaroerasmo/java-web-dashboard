@@ -151,21 +151,29 @@
                 <div class="mq-panel">
                     @if (selectedQueue) {
                       <div class="mq-actions">
-                        <div class="mq-row">
-                          <label class="field-label">View</label>
-                          <input type="number" [(ngModel)]="viewCount" class="field-input mq-count" min="1" />
-                          <button class="save-btn" (click)="viewMessages()" [disabled]="messagesLoading">
-                            {{ messagesLoading ? 'Loading...' : 'View messages' }}
-                          </button>
+                        <div class="row align-items-center gx-3 mb-2">
+                          <label class="col-12 col-md-3 text-md-end field-label">View</label>
+                          <div class="col-6 col-md-3">
+                            <input type="number" [(ngModel)]="viewCount" class="field-input w-100" min="1" />
+                          </div>
+                          <div class="col-6 col-md-auto">
+                            <button class="save-btn" (click)="viewMessages()" [disabled]="messagesLoading">
+                              {{ messagesLoading ? 'Loading...' : 'View messages' }}
+                            </button>
+                          </div>
                         </div>
-                        <div class="mq-row">
-                          <label class="field-label">Send</label>
-                          <textarea [(ngModel)]="messagePayload" class="mq-textarea" placeholder="Message payload"></textarea>
-                          <button class="save-btn" (click)="sendMessage()" [disabled]="mqSending">
-                            {{ mqSending ? 'Sending...' : 'Send' }}
-                          </button>
+                        <div class="row align-items-center gx-3 mb-2">
+                          <label class="col-12 col-md-3 text-md-end field-label">Send</label>
+                          <div class="col-12 col-md-7">
+                            <textarea [(ngModel)]="messagePayload" class="mq-textarea" placeholder="Message payload"></textarea>
+                          </div>
+                          <div class="col-12 col-md-2">
+                            <button class="save-btn" (click)="sendMessage()" [disabled]="mqSending">
+                              {{ mqSending ? 'Sending...' : 'Send' }}
+                            </button>
+                          </div>
                         </div>
-                        <div class="mq-row">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
                           <button class="remove-btn" (click)="removeOneMessage()">Remove 1</button>
                           <button class="remove-btn" (click)="removeAllMessages()">Remove all</button>
                           @if (mqMessage) {
@@ -231,18 +239,21 @@
                       <span class="array-index">[{{ $index }}]</span>
                       <button class="remove-btn" (click)="removeGo2RtcStream($index)">Remove</button>
                     </div>
-                    <div class="field-row">
-                      <label class="field-label">name</label>
-                      <input type="text" [(ngModel)]="stream.name" class="field-input" placeholder="stream name" />
+                    <div class="row align-items-center gx-3 mb-2">
+                      <label class="col-12 col-md-3 text-md-end field-label">name</label>
+                      <div class="col-12 col-md-9">
+                        <input type="text" [(ngModel)]="stream.name" class="field-input w-100" placeholder="stream name" />
+                      </div>
                     </div>
-                    <div class="field-row">
-                      <label class="field-label">url</label>
-                      <div class="go2rtc-url">
-                        <input
-                          [type]="isGo2RtcRevealed($index) ? 'text' : 'password'"
-                          [(ngModel)]="stream.url"
-                          class="field-input"
-                          placeholder="rtsp://..." />
+                    <div class="row align-items-center gx-3 mb-2">
+                      <label class="col-12 col-md-3 text-md-end field-label">url</label>
+                      <div class="col-12 col-md-9">
+                        <div class="go2rtc-url">
+                          <input
+                            [type]="isGo2RtcRevealed($index) ? 'text' : 'password'"
+                            [(ngModel)]="stream.url"
+                            class="field-input"
+                            placeholder="rtsp://..." />
                         <button class="env-eye-btn" (click)="toggleGo2RtcReveal($index)" type="button" aria-label="Reveal URL">
                           @if (isGo2RtcRevealed($index)) {
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -258,6 +269,7 @@
                             </svg>
                           }
                         </button>
+                      </div>
                       </div>
                     </div>
                   </div>
