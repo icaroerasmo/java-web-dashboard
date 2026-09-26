@@ -137,50 +137,28 @@
   border-radius: 3px;
 }
 
-.env-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.env-table th {
-  text-align: left;
+.env-col-header {
   color: var(--text-faint);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 0 8px 8px;
-  border-bottom: 1px solid var(--border);
 }
 
-.env-col-key {
-  width: 30%;
-}
-
-.env-col-value {
-  width: 45%;
-}
-
-.env-col-secret {
-  width: 10%;
-  text-align: center;
-}
-
-.env-col-actions {
-  width: 15%;
-}
-
-.env-table td {
-  padding: 4px 8px;
-}
-
-.env-table tbody tr {
-  border-bottom: 1px solid var(--border);
-}
-
-.env-table tbody tr:hover {
+.env-row {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
   background: var(--surface-subtle);
+}
+
+.env-field-label {
+  display: block;
+  color: var(--text-faint);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
 }
 
 .env-input {
@@ -234,10 +212,6 @@
 
 .env-eye-btn svg {
   display: block;
-}
-
-.env-actions {
-  text-align: center;
 }
 
 .env-remove-btn {
@@ -806,57 +780,6 @@
     text-overflow: ellipsis;
   }
 
-  .env-table,
-  .env-table thead,
-  .env-table tbody,
-  .env-table tr,
-  .env-table td {
-    display: block;
-    width: 100%;
-  }
-
-  .env-table thead {
-    display: none;
-  }
-
-  .env-table tbody tr {
-    margin-bottom: 10px;
-    padding: 10px 12px;
-    background: var(--surface-subtle);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    position: relative;
-  }
-
-  .env-table td {
-    padding: 5px 0;
-  }
-
-  .env-table td::before {
-    content: attr(data-label);
-    display: block;
-    color: var(--text-faint);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-
-  .env-actions {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    padding: 0 !important;
-  }
-
-  .env-actions::before {
-    content: none !important;
-  }
-
-  .env-table .env-col-secret {
-    text-align: left;
-  }
-
   .mq-textarea {
     font-size: 16px;
   }
@@ -916,12 +839,6 @@
     width: 40px;
     height: 40px;
     font-size: 22px;
-  }
-
-  .env-col-secret {
-    display: flex;
-    align-items: center;
-    gap: 10px;
   }
 
   .modal-container.detail-view .indicators-row,

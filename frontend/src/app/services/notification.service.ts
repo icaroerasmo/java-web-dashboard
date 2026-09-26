@@ -14,6 +14,7 @@ export interface NotificationSummary {
   timestamp: number;
   date: string | null;
   hour: string | null;
+  size: number | null;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -55,60 +55,57 @@
           }
           @if (!envLoading) {
             <div class="env-scroll">
-              <table class="env-table">
-                <thead>
-                  <tr>
-                    <th class="env-col-key">KEY</th>
-                    <th class="env-col-value">VALUE</th>
-                    <th class="env-col-secret">SECRET</th>
-                    <th class="env-col-actions"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (env of envVars; track $index) {
-                    <tr>
-                      <td data-label="KEY">
-                        <input class="env-input" [(ngModel)]="env.key" placeholder="VARIABLE_NAME" />
-                      </td>
-                      <td data-label="VALUE">
-                        <div class="env-secret-wrapper">
-                          @if (env.secret && !isSecretRevealed($index)) {
-                            <input class="env-input env-input-secret" [value]="env.value" (input)="env.value = $any($event.target).value" type="password" placeholder="value" />
+              <div class="row g-2 align-items-center d-none d-md-flex mb-2">
+                <div class="col-md-3"><span class="env-col-header">KEY</span></div>
+                <div class="col-md-5"><span class="env-col-header">VALUE</span></div>
+                <div class="col-md-2"><span class="env-col-header">SECRET</span></div>
+                <div class="col-md-2"></div>
+              </div>
+              @for (env of envVars; track $index) {
+                <div class="row g-2 align-items-center env-row mb-2">
+                  <div class="col-12 col-md-3">
+                    <label class="d-md-none env-field-label">KEY</label>
+                    <input class="env-input w-100" [(ngModel)]="env.key" placeholder="VARIABLE_NAME" />
+                  </div>
+                  <div class="col-12 col-md-5">
+                    <label class="d-md-none env-field-label">VALUE</label>
+                    <div class="env-secret-wrapper">
+                      @if (env.secret && !isSecretRevealed($index)) {
+                        <input class="env-input env-input-secret" [value]="env.value" (input)="env.value = $any($event.target).value" type="password" placeholder="value" />
+                      } @else {
+                        <input class="env-input" [(ngModel)]="env.value" placeholder="value" />
+                      }
+                      @if (env.secret) {
+                        <button class="env-eye-btn" (click)="toggleSecretReveal($index)" type="button">
+                          @if (isSecretRevealed($index)) {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                              <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+                              <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
                           } @else {
-                            <input class="env-input" [(ngModel)]="env.value" placeholder="value" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                              <circle cx="12" cy="12" r="3"/>
+                            </svg>
                           }
-                          @if (env.secret) {
-                            <button class="env-eye-btn" (click)="toggleSecretReveal($index)" type="button">
-                              @if (isSecretRevealed($index)) {
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                                  <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
-                                  <line x1="1" y1="1" x2="23" y2="23"/>
-                                </svg>
-                              } @else {
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                  <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                              }
-                            </button>
-                          }
-                        </div>
-                      </td>
-                      <td data-label="SECRET" class="env-col-secret">
-                        <label class="secret-toggle">
-                          <input type="checkbox" [(ngModel)]="env.secret" (change)="env.secret ? revealedSecrets.add($index) : revealedSecrets.delete($index)" />
-                          <span class="secret-slider"></span>
-                        </label>
-                      </td>
-                      <td class="env-actions">
-                        <button class="env-remove-btn" (click)="removeEnvVar($index)">&times;</button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-2">
+                    <label class="d-md-none env-field-label">SECRET</label>
+                    <label class="secret-toggle">
+                      <input type="checkbox" [(ngModel)]="env.secret" (change)="env.secret ? revealedSecrets.add($index) : revealedSecrets.delete($index)" />
+                      <span class="secret-slider"></span>
+                    </label>
+                  </div>
+                  <div class="col-12 col-md-2 text-md-end">
+                    <button class="env-remove-btn" (click)="removeEnvVar($index)">&times;</button>
+                  </div>
+                </div>
+              }
               <button class="env-add-btn" (click)="addEnvVar()">+ Add Variable</button>
             </div>
             <div class="save-row">
