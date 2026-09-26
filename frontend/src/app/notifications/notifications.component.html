@@ -59,6 +59,7 @@
                   <span class="log-time">{{ timeOf(n) }}</span>
                   <span class="log-kind">{{ n.kind }}</span>
                   <span class="log-filename">{{ n.filename }}</span>
+                  <span class="log-size">{{ sizeLabel(n) }}</span>
                   <div class="log-actions">
                     @if (n.fileId) {
                       <button class="log-toggle" (click)="toggleLog(n)">{{ isLogExpanded(n) ? 'Ocultar log' : 'Ver log' }}</button>

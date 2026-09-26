@@ -217,6 +217,14 @@ export class NotificationsComponent implements OnChanges {
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
 
+  sizeLabel(n: NotificationSummary): string {
+    if (n.size == null || n.size <= 0) {
+      return '';
+    }
+    const kb = Math.round(n.size / 1024);
+    return `(${kb}Kb)`;
+  }
+
   onClose(): void {
     this.close.emit();
   }
