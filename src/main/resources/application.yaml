@@ -34,3 +34,7 @@ dashboard:
     base-url: http://go2rtc:1984
   notifier:
     base-url: http://java-telegram-notifier:8080
+  push:
+    public-key: ${PUSH_PUBLIC_KEY:}
+    private-key: ${PUSH_PRIVATE_KEY:}
+    subject: ${PUSH_SUBJECT:mailto:cafofo@example.com}
