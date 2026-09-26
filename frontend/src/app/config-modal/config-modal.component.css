@@ -496,18 +496,8 @@
   border-radius: 8px;
 }
 
-.mq-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.mq-count {
-  max-width: 80px;
-}
-
 .mq-textarea {
-  flex: 1;
+  width: 100%;
   min-height: 60px;
   padding: 6px 8px;
   background: var(--input-bg);
@@ -598,24 +588,12 @@
   line-height: 1.5;
 }
 
-.field-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
 .field-label {
   color: var(--text-secondary);
   font-size: 13px;
-  min-width: 160px;
-  text-align: right;
-  flex-shrink: 0;
 }
 
 .field-input {
-  flex: 1;
-  max-width: 400px;
   padding: 5px 8px;
   background: var(--input-bg);
   border: 1px solid var(--border-strong);
@@ -633,8 +611,7 @@
 
 .go2rtc-url {
   position: relative;
-  flex: 1;
-  max-width: 400px;
+  width: 100%;
 }
 
 .go2rtc-url .field-input {
@@ -880,32 +857,7 @@
     text-align: left;
   }
 
-  .mq-row {
-    flex-wrap: wrap;
-    align-items: stretch;
-  }
-
-  .mq-row .field-label {
-    min-width: 0;
-    text-align: left;
-  }
-
-  .mq-row .field-input,
-  .mq-row .field-select {
-    max-width: 100%;
-    width: 100%;
-  }
-
-  .mq-row button {
-    flex: 1;
-    min-height: 42px;
-    justify-content: center;
-    display: inline-flex;
-    align-items: center;
-  }
-
   .mq-textarea {
-    width: 100%;
     font-size: 16px;
   }
 
@@ -913,15 +865,7 @@
     max-height: 40vh;
   }
 
-  .field-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-  }
-
   .field-label {
-    min-width: 0;
-    text-align: left;
     font-size: 14px;
   }
 
