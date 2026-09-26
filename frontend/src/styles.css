@@ -24,6 +24,8 @@
   --accent: #6cb4ee;
   --amber: #eab308;
   --green: #22c55e;
+  --select-option-bg: #1c1c20;
+  color-scheme: dark;
 }
 
 :root.light {
@@ -45,6 +47,8 @@
   --accent: #17509e;
   --amber: #946f04;
   --green: #15803d;
+  --select-option-bg: #ffffff;
+  color-scheme: light;
 }
 
 html, body {
@@ -56,6 +60,16 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+select {
+  color: var(--text);
+  background-color: var(--input-bg);
+}
+
+select option {
+  color: var(--text);
+  background-color: var(--select-option-bg);
 }
 
 ::-webkit-scrollbar {
