@@ -90,6 +90,33 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
   };
 
+  // Pull-to-refresh (touch) state and handlers
+  private pullStartY = 0;
+  private pullAtEnd = false;
+  private pullTriggered = false;
+  private readonly PULL_THRESHOLD_PX = 70;
+
+  private onPullStart = (event: TouchEvent): void => {
+    const el = this.cameraWall?.nativeElement;
+    if (!el || event.touches.length === 0) {
+      return;
+    }
+    this.pullStartY = event.touches[0].clientY;
+    this.pullAtEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+    this.pullTriggered = false;
+  };
+
+  private onPullMove = (event: TouchEvent): void => {
+    if (!this.pullAtEnd || this.pullTriggered || event.touches.length === 0) {
+      return;
+    }
+    const delta = this.pullStartY - event.touches[0].clientY;
+    if (delta >= this.PULL_THRESHOLD_PX) {
+      this.pullTriggered = true;
+      this.refreshCameras();
+    }
+  };
+
   constructor(
     private configService: ConfigService,
     private detectionWebSocketService: DetectionWebSocketService,
@@ -126,6 +153,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.setupNotifications();
     window.addEventListener('keydown', this.onKeydown);
     this.watchGridResize();
+    this.setupPullToRefresh();
   }
 
   ngAfterViewChecked(): void {
@@ -140,6 +168,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     window.removeEventListener('keydown', this.onKeydown);
+    const wall = this.cameraWall?.nativeElement;
+    wall?.removeEventListener('touchstart', this.onPullStart);
+    wall?.removeEventListener('touchmove', this.onPullMove);
     this.detectionWebSocketService.disconnect();
     this.notificationWebSocketService.disconnect();
     this.stopHealthChecks();
@@ -182,6 +213,22 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.streamsError = true;
       }
     });
+  }
+
+  refreshCameras(): void {
+    this.loadStreams();
+  }
+
+  private setupPullToRefresh(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    const el = this.cameraWall?.nativeElement;
+    if (!el) {
+      return;
+    }
+    el.addEventListener('touchstart', this.onPullStart, { passive: true });
+    el.addEventListener('touchmove', this.onPullMove, { passive: true });
   }
 
   private resetPerStreamState(): void {
