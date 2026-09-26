@@ -77,7 +77,6 @@ html, body {
   inset: 0;
   z-index: 50;
   background: #000;
-  border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 16px 64px rgba(0, 0, 0, 0.6);
   transform-origin: center center;
