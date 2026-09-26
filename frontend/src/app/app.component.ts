@@ -5,6 +5,7 @@ import { ConfigModalComponent } from './config-modal/config-modal.component';
 import { ConfigService } from './services/config.service';
 import { DetectionWebSocketService } from './services/detection-websocket.service';
 import { NotificationWebSocketService } from './services/notification-websocket.service';
+import { PushService } from './services/push.service';
 import { NotificationSummary } from './services/notification.service';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { computeGrid, CameraGrid } from './services/grid-layout';
@@ -93,6 +94,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private configService: ConfigService,
     private detectionWebSocketService: DetectionWebSocketService,
     private notificationWebSocketService: NotificationWebSocketService,
+    private pushService: PushService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     const saved = localStorage.getItem('dashboard-theme');
@@ -719,6 +721,7 @@ player.video.muted = !player.video.muted;
     this.notificationWebSocketService.messages().subscribe((summary) => {
       this.showBrowserNotification(summary);
     });
+    this.pushService.init();
   }
 
   private showBrowserNotification(summary: NotificationSummary): void {

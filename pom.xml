@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.icaroerasmo</groupId>
     <artifactId>java-web-dashboard</artifactId>
-    <version>0.11.19</version>
+    <version>0.11.20</version>
     <name>java-web-dashboard</name>
     <description>Web dashboard for the camera stack</description>
     <properties>
@@ -32,6 +32,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>nl.martijndwars</groupId>
+            <artifactId>web-push</artifactId>
+            <version>5.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.78.1</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
