@@ -67,6 +67,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private frozenSeconds = 3;
   private gridObserver: ResizeObserver | null = null;
   private readonly RECOVER_INTERVAL_MS = 15000;
+  private minLoadingTimer: any = null;
 
   @HostBinding('class.presentation') get hasPresentationMode(): boolean {
     return this.presentationMode;
@@ -177,6 +178,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.disposePlayers();
     this.gridObserver?.disconnect();
     this.gridObserver = null;
+    if (this.minLoadingTimer !== null) {
+      clearTimeout(this.minLoadingTimer);
+      this.minLoadingTimer = null;
+    }
     if (this.expandedOverlay) {
       this.expandedOverlay.querySelectorAll('video-rtc').forEach((el) => el.remove());
       this.expandedOverlay.remove();
@@ -191,32 +196,53 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     document.documentElement.classList.toggle('light', this.theme === 'light');
   }
 
-  loadStreams(): void {
+  loadStreams(minDurationMs = 0): void {
     this.loadingStreams = true;
     this.streamsError = false;
+    const startedAt = Date.now();
+    const settle = (apply: () => void) => {
+      if (this.minLoadingTimer !== null) {
+        clearTimeout(this.minLoadingTimer);
+        this.minLoadingTimer = null;
+      }
+      const remaining = Math.max(0, minDurationMs - (Date.now() - startedAt));
+      if (remaining <= 0) {
+        apply();
+      } else {
+        this.minLoadingTimer = setTimeout(() => {
+          this.minLoadingTimer = null;
+          apply();
+        }, remaining);
+      }
+    };
     this.configService.getGo2RtcStreams().subscribe({
       next: (list) => {
-        this.loadingStreams = false;
-        this.streams = (list ?? []).filter(
+        const streams = (list ?? []).filter(
           (s: CameraStream) => !!s && !!s.name && !String(s.name).toLowerCase().endsWith('panel')
         );
-        const grid = this.computeResponsiveGrid(this.streams.length);
-        this.gridColumns = grid.columns;
-        this.gridRows = grid.rows;
-        this.resetPerStreamState();
-        this.disposePlayers();
-        this.pendingAttach = true;
+        const grid = this.computeResponsiveGrid(streams.length);
+        settle(() => {
+          this.loadingStreams = false;
+          this.streams = streams;
+          this.gridColumns = grid.columns;
+          this.gridRows = grid.rows;
+          this.resetPerStreamState();
+          this.disposePlayers();
+          this.pendingAttach = true;
+        });
       },
       error: () => {
-        this.loadingStreams = false;
-        this.streams = [];
-        this.streamsError = true;
+        settle(() => {
+          this.loadingStreams = false;
+          this.streams = [];
+          this.streamsError = true;
+        });
       }
     });
   }
 
   refreshCameras(): void {
-    this.loadStreams();
+    this.loadStreams(3000);
   }
 
   get skeletonTiles(): number[] {
