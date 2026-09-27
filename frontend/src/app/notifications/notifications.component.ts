@@ -232,7 +232,7 @@ export class NotificationsComponent implements OnChanges {
     if (n.size == null || n.size <= 0) {
       return '';
     }
-    const kb = Math.round(n.size / 1024);
+    const kb = Math.round((n.size / 1024) * 10) / 10;
     return `(${kb}Kb)`;
   }
 

@@ -125,4 +125,12 @@ describe('NotificationsComponent', () => {
 
     expect(notificationService.getNotifications).not.toHaveBeenCalled();
   });
+
+  it('sizeLabel formats bytes as Kb with one decimal', () => {
+    expect(component.sizeLabel({ ...summary('n1', 1000), size: 1843 })).toBe('(1.8Kb)');
+    expect(component.sizeLabel({ ...summary('n1', 1000), size: 1536 })).toBe('(1.5Kb)');
+    expect(component.sizeLabel({ ...summary('n1', 1000), size: 1024 })).toBe('(1Kb)');
+    expect(component.sizeLabel({ ...summary('n1', 1000), size: 0 })).toBe('');
+    expect(component.sizeLabel({ ...summary('n1', 1000), size: null })).toBe('');
+  });
 });
