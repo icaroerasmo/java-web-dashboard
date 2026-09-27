@@ -47,9 +47,14 @@ export class NotificationsComponent implements OnChanges {
   private loadHistory(): void {
     this.hasMore = true;
     this.loadingMore = false;
-    this.notificationService.getNotifications(this.pageSize).subscribe((list) => {
-      this.all = list.sort((a, b) => b.timestamp - a.timestamp);
-      this.recomputeKinds();
+    this.notificationService.getNotifications(this.pageSize).subscribe({
+      next: (list) => {
+        this.all = list.sort((a, b) => b.timestamp - a.timestamp);
+        this.recomputeKinds();
+      },
+      error: () => {
+        this.loadingMore = false;
+      }
     });
   }
 
@@ -62,25 +67,30 @@ export class NotificationsComponent implements OnChanges {
       return;
     }
     this.loadingMore = true;
-    this.notificationService.getNotifications(this.pageSize, oldest).subscribe((list) => {
-      if (list.length === 0) {
-        this.hasMore = false;
+    this.notificationService.getNotifications(this.pageSize, oldest).subscribe({
+      next: (list) => {
+        if (list.length === 0) {
+          this.hasMore = false;
+          this.loadingMore = false;
+          return;
+        }
+        const existing = new Set(this.all.map((n) => n.id));
+        const fresh = list.filter((n) => !existing.has(n.id));
+        const visibleBefore = this.tab === 'logs' ? this.filteredLogs().length : this.all.length;
+        this.all.push(...fresh);
+        this.all.sort((a, b) => b.timestamp - a.timestamp);
+        this.recomputeKinds();
+        if (list.length < this.pageSize) {
+          this.hasMore = false;
+        }
         this.loadingMore = false;
-        return;
-      }
-      const existing = new Set(this.all.map((n) => n.id));
-      const fresh = list.filter((n) => !existing.has(n.id));
-      const visibleBefore = this.tab === 'logs' ? this.filteredLogs().length : this.all.length;
-      this.all.push(...fresh);
-      this.all.sort((a, b) => b.timestamp - a.timestamp);
-      this.recomputeKinds();
-      if (list.length < this.pageSize) {
-        this.hasMore = false;
-      }
-      this.loadingMore = false;
-      const visibleAfter = this.tab === 'logs' ? this.filteredLogs().length : this.all.length;
-      if (this.hasMore && visibleAfter === visibleBefore) {
-        this.loadMore();
+        const visibleAfter = this.tab === 'logs' ? this.filteredLogs().length : this.all.length;
+        if (this.hasMore && visibleAfter === visibleBefore) {
+          this.loadMore();
+        }
+      },
+      error: () => {
+        this.loadingMore = false;
       }
     });
   }
