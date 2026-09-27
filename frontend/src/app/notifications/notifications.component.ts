@@ -123,7 +123,13 @@ export class NotificationsComponent implements OnChanges {
   }
 
   logs(): NotificationSummary[] {
-    return this.all.filter((n) => n.mediaType === 'DOCUMENT');
+    const onlyLogs = this.all.filter((n) => n.mediaType === 'DOCUMENT');
+
+    if(onlyLogs.length < 100) {
+      this.loadMore();
+    }
+
+    return onlyLogs;
   }
 
   notifications(): NotificationSummary[] {
