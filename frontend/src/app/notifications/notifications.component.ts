@@ -76,7 +76,6 @@ export class NotificationsComponent implements OnChanges {
         }
         const existing = new Set(this.all.map((n) => n.id));
         const fresh = list.filter((n) => !existing.has(n.id));
-        const visibleBefore = this.tab === 'logs' ? this.filteredLogs().length : this.all.length;
         this.all.push(...fresh);
         this.all.sort((a, b) => b.timestamp - a.timestamp);
         this.recomputeKinds();
@@ -84,10 +83,6 @@ export class NotificationsComponent implements OnChanges {
           this.hasMore = false;
         }
         this.loadingMore = false;
-        const visibleAfter = this.tab === 'logs' ? this.filteredLogs().length : this.all.length;
-        if (this.hasMore && visibleAfter === visibleBefore) {
-          this.loadMore();
-        }
       },
       error: () => {
         this.loadingMore = false;
