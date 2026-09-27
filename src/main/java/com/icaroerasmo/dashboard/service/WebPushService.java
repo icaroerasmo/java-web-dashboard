@@ -76,6 +76,12 @@ public class WebPushService {
         }
 
         for (PushSubscription sub : store.all()) {
+            if (sub == null || isBlank(sub.endpoint())
+                    || isBlank(sub.p256dh()) || isBlank(sub.auth())) {
+                log.warn("Removing push subscription with missing keys");
+                store.remove(sub);
+                continue;
+            }
             try {
                 Notification notification = new Notification(
                         sub.endpoint(), sub.p256dh(), sub.auth(), payload);
@@ -92,7 +98,14 @@ public class WebPushService {
             } catch (GeneralSecurityException | IOException | JoseException | ExecutionException e) {
                 log.warn("Failed to send push notification, removing subscription: {}", e.getMessage());
                 store.remove(sub);
+            } catch (RuntimeException e) {
+                log.warn("Failed to send push notification (runtime), removing subscription: {}", e.getMessage());
+                store.remove(sub);
             }
         }
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

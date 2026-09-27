@@ -42,7 +42,12 @@ export class PushService {
           applicationServerKey: this.urlBase64ToUint8Array(publicKey)
         });
       }
-      await firstValueFrom(this.http.post('/api/push/subscribe', subscription.toJSON()));
+      const json = subscription.toJSON();
+      await firstValueFrom(this.http.post('/api/push/subscribe', {
+        endpoint: json.endpoint,
+        p256dh: json.keys?.['p256dh'] ?? null,
+        auth: json.keys?.['auth'] ?? null
+      }));
     } catch (e) {
       // Push setup is best-effort; ignore failures.
     }

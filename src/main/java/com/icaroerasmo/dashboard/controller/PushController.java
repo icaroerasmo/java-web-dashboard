@@ -29,11 +29,16 @@ public class PushController {
 
     @PostMapping("/subscribe")
     public ResponseEntity<Void> subscribe(@RequestBody PushSubscription subscription) {
-        if (subscription == null || subscription.endpoint() == null || subscription.endpoint().isBlank()) {
+        if (subscription == null || isBlank(subscription.endpoint())
+                || isBlank(subscription.p256dh()) || isBlank(subscription.auth())) {
             return ResponseEntity.badRequest().build();
         }
         store.add(subscription);
         return ResponseEntity.ok().build();
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     @PostMapping("/unsubscribe")
