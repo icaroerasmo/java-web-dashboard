@@ -83,4 +83,54 @@ describe('NotificationsComponent', () => {
 
     expect(notificationService.getNotifications).toHaveBeenCalled();
   });
+
+  it('logs() returns only DOCUMENT items', () => {
+    component.all = [
+      summary('d1', 3000),
+      { ...summary('p1', 2000), mediaType: 'PHOTO' },
+      { ...summary('a1', 1000), mediaType: 'ANIMATION' }
+    ];
+    component.hasMore = false;
+
+    const logs = component.logs();
+
+    expect(logs.map((l) => l.id)).toEqual(['d1']);
+    expect(notificationService.getNotifications).not.toHaveBeenCalled();
+  });
+
+  it('logs() triggers loadMore when there are fewer than pageSize logs', () => {
+    const size = (component as any).pageSize as number;
+    component.all = Array.from({ length: size - 1 }, (_, i) => summary('n' + i, 1000 - i));
+    notificationService.getNotifications.and.returnValue(of([]));
+
+    component.logs();
+
+    expect(notificationService.getNotifications).toHaveBeenCalled();
+  });
+
+  it('logs() does not trigger loadMore when at pageSize logs', () => {
+    const size = (component as any).pageSize as number;
+    component.all = Array.from({ length: size }, (_, i) => summary('n' + i, 1000 - i));
+
+    component.logs();
+
+    expect(notificationService.getNotifications).not.toHaveBeenCalled();
+  });
+
+  it('logs() does not trigger loadMore when exhausted', () => {
+    component.all = [summary('n1', 1000)];
+    component.hasMore = false;
+
+    component.logs();
+
+    expect(notificationService.getNotifications).not.toHaveBeenCalled();
+  });
+
+  it('sizeLabel formats bytes as Kb with one decimal', () => {
+    expect(component.sizeLabel({ ...summary('n1', 1000), size: 1843 })).toBe('(1.8Kb)');
+    expect(component.sizeLabel({ ...summary('n1', 1000), size: 1536 })).toBe('(1.5Kb)');
+    expect(component.sizeLabel({ ...summary('n1', 1000), size: 1024 })).toBe('(1Kb)');
+    expect(component.sizeLabel({ ...summary('n1', 1000), size: 0 })).toBe('');
+    expect(component.sizeLabel({ ...summary('n1', 1000), size: null })).toBe('');
+  });
 });

@@ -125,7 +125,7 @@ export class NotificationsComponent implements OnChanges {
   logs(): NotificationSummary[] {
     const onlyLogs = this.all.filter((n) => n.mediaType === 'DOCUMENT');
 
-    if(onlyLogs.length < 100) {
+    if(onlyLogs.length < this.pageSize) {
       this.loadMore();
     }
 
@@ -232,7 +232,7 @@ export class NotificationsComponent implements OnChanges {
     if (n.size == null || n.size <= 0) {
       return '';
     }
-    const kb = Math.round(n.size / 1024);
+    const kb = Math.round((n.size / 1024) * 10) / 10;
     return `(${kb}Kb)`;
   }
 
