@@ -125,7 +125,7 @@ export class NotificationsComponent implements OnChanges {
   logs(): NotificationSummary[] {
     const onlyLogs = this.all.filter((n) => n.mediaType === 'DOCUMENT');
 
-    if(onlyLogs.length < 100) {
+    if(onlyLogs.length < this.pageSize) {
       this.loadMore();
     }
 
