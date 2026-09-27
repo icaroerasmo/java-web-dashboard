@@ -56,18 +56,25 @@
           @if (!envLoading) {
             <div class="env-scroll">
               <div class="row g-2 align-items-center d-none d-md-flex mb-2">
+                <div class="col-md-2"><span class="env-col-header">SECRET</span></div>
                 <div class="col-md-3"><span class="env-col-header">KEY</span></div>
                 <div class="col-md-5"><span class="env-col-header">VALUE</span></div>
-                <div class="col-md-2"><span class="env-col-header">SECRET</span></div>
                 <div class="col-md-2"></div>
               </div>
               @for (env of envVars; track $index) {
                 <div class="row g-2 align-items-center env-row mb-2">
-                  <div class="col-12 col-md-3 order-2 order-md-1">
+                  <div class="col-12 col-md-2">
+                    <label class="d-md-none env-field-label">SECRET</label>
+                    <label class="secret-toggle">
+                      <input type="checkbox" [(ngModel)]="env.secret" (change)="env.secret ? revealedSecrets.add($index) : revealedSecrets.delete($index)" />
+                      <span class="secret-slider"></span>
+                    </label>
+                  </div>
+                  <div class="col-12 col-md-3">
                     <label class="d-md-none env-field-label">KEY</label>
                     <input class="env-input w-100" [(ngModel)]="env.key" placeholder="VARIABLE_NAME" />
                   </div>
-                  <div class="col-12 col-md-5 order-3 order-md-2">
+                  <div class="col-12 col-md-5">
                     <label class="d-md-none env-field-label">VALUE</label>
                     <div class="env-secret-wrapper">
                       @if (env.secret && !isSecretRevealed($index)) {
@@ -94,14 +101,7 @@
                       }
                     </div>
                   </div>
-                  <div class="col-12 col-md-2 order-1 order-md-3">
-                    <label class="d-md-none env-field-label">SECRET</label>
-                    <label class="secret-toggle">
-                      <input type="checkbox" [(ngModel)]="env.secret" (change)="env.secret ? revealedSecrets.add($index) : revealedSecrets.delete($index)" />
-                      <span class="secret-slider"></span>
-                    </label>
-                  </div>
-                  <div class="col-12 col-md-2 text-end order-4 order-md-4">
+                  <div class="col-12 col-md-2 text-end text-md-start">
                     <button class="env-remove-btn" (click)="removeEnvVar($index)">&times;</button>
                   </div>
                 </div>
