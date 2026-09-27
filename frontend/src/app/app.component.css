@@ -390,6 +390,52 @@
   }
 }
 
+/* Loading skeleton */
+.skeleton-tile {
+  min-height: 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    100deg,
+    var(--surface-subtle) 30%,
+    var(--surface-hover) 50%,
+    var(--surface-subtle) 70%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.refresh-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  color: var(--accent);
+}
+
+.refresh-spinner svg {
+  display: block;
+  animation: refresh-spin 0.9s linear infinite;
+}
+
 @media (max-width: 640px) {
   .camera-wall {
     display: flex;
@@ -409,6 +455,13 @@
 
   .camera-tile:hover {
     box-shadow: none;
+  }
+
+  .skeleton-tile {
+    flex-shrink: 0;
+    width: 100%;
+    border-radius: 6px;
+    aspect-ratio: 16 / 9;
   }
 
   .hamburger.open {

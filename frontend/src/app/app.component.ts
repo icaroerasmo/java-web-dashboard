@@ -92,7 +92,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   // Pull-to-refresh (touch) state and handlers
   private pullStartY = 0;
-  private pullAtEnd = false;
+  private pullAtTop = false;
   private pullTriggered = false;
   private readonly PULL_THRESHOLD_PX = 70;
 
@@ -102,15 +102,15 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       return;
     }
     this.pullStartY = event.touches[0].clientY;
-    this.pullAtEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+    this.pullAtTop = el.scrollTop <= 0;
     this.pullTriggered = false;
   };
 
   private onPullMove = (event: TouchEvent): void => {
-    if (!this.pullAtEnd || this.pullTriggered || event.touches.length === 0) {
+    if (!this.pullAtTop || this.pullTriggered || event.touches.length === 0) {
       return;
     }
-    const delta = this.pullStartY - event.touches[0].clientY;
+    const delta = event.touches[0].clientY - this.pullStartY;
     if (delta >= this.PULL_THRESHOLD_PX) {
       this.pullTriggered = true;
       this.refreshCameras();
@@ -217,6 +217,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   refreshCameras(): void {
     this.loadStreams();
+  }
+
+  get skeletonTiles(): number[] {
+    const count = Math.max(1, this.gridColumns * this.gridRows);
+    return Array.from({ length: count }, (_, i) => i);
   }
 
   private setupPullToRefresh(): void {
