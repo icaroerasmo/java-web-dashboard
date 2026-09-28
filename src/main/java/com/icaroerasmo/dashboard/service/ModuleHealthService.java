@@ -31,6 +31,7 @@ public class ModuleHealthService {
         }
         statusCache.put("rabbitmq", checkRabbitMq());
         statusCache.put("go2rtc", checkGo2Rtc());
+        statusCache.put("elasticsearch", checkElasticsearch());
     }
 
     public List<Map<String, String>> getModules() {
@@ -43,6 +44,7 @@ public class ModuleHealthService {
         }
         modules.add(moduleStatus("rabbitmq", "infra", statusOf("rabbitmq")));
         modules.add(moduleStatus("go2rtc", "infra", statusOf("go2rtc")));
+        modules.add(moduleStatus("elasticsearch", "infra", statusOf("elasticsearch")));
         return modules;
     }
 
@@ -99,6 +101,23 @@ public class ModuleHealthService {
                     .toBodilessEntity();
             if (response.getStatusCode().is2xxSuccessful()) {
                 return "UP";
+            }
+        } catch (Exception ignored) {
+        }
+        return "DOWN";
+    }
+
+    private String checkElasticsearch() {
+        try {
+            ResponseEntity<Map> response = restClient.get()
+                    .uri(properties.getElasticsearch().getBaseUrl() + "/_cluster/health")
+                    .retrieve()
+                    .toEntity(Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                String status = String.valueOf(response.getBody().get("status"));
+                if ("green".equals(status) || "yellow".equals(status)) {
+                    return "UP";
+                }
             }
         } catch (Exception ignored) {
         }

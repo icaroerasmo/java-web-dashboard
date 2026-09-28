@@ -32,6 +32,9 @@ dashboard:
     password: ${RABBITMQ_PASSWORD:guest}
   go2rtc:
     base-url: http://go2rtc:1984
+  elasticsearch:
+    base-url: ${ELASTICSEARCH_URL:http://elasticsearch:9200}
+    ttl-days: ${ELASTICSEARCH_LOG_TTL_DAYS:10}
   notifier:
     base-url: http://java-telegram-notifier:8080
   push:

@@ -65,4 +65,20 @@ export class ConfigService {
   restartRabbitMq(): Observable<any> {
     return this.http.post<any>('/api/rabbitmq/restart', {});
   }
+
+  getElasticsearchHealth(): Observable<any> {
+    return this.http.get<any>('/api/elasticsearch/health');
+  }
+
+  getElasticsearchIndices(): Observable<any> {
+    return this.http.get<any>('/api/elasticsearch/indices');
+  }
+
+  getElasticsearchConfig(): Observable<any> {
+    return this.http.get<any>('/api/elasticsearch/config');
+  }
+
+  restartElasticsearch(): Observable<any> {
+    return this.http.post<any>('/api/elasticsearch/restart', {});
+  }
 }

@@ -51,6 +51,11 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
   go2rtcSaving = false;
   revealedGo2rtcUrls = new Set<number>();
 
+  esHealth: any = null;
+  esIndices: any[] = [];
+  esConfig: any = null;
+  esLoading = false;
+
   private pollTimer: any = null;
 
   constructor(
@@ -89,6 +94,10 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
     return this.selectedTab === 'go2rtc';
   }
 
+  get isElasticsearchTab(): boolean {
+    return this.selectedTab === 'elasticsearch';
+  }
+
   private startPolling(): void {
     this.stopPolling();
     this.pollTimer = setInterval(() => this.loadModules(), 5000);
@@ -125,6 +134,10 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
     } else if (name === 'rabbitmq') {
       if (this.queues.length === 0 && !this.queuesLoading) {
         this.loadQueues();
+      }
+    } else if (name === 'elasticsearch') {
+      if (!this.esHealth && !this.esLoading) {
+        this.loadElasticsearch();
       }
     } else if (!this.configs[name]) {
       this.loadConfig(name);
@@ -234,7 +247,9 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
       ? this.configService.restartGo2Rtc()
       : this.isRabbitMqTab
         ? this.configService.restartRabbitMq()
-        : this.configService.restartModule(this.selectedTab);
+        : this.isElasticsearchTab
+          ? this.configService.restartElasticsearch()
+          : this.configService.restartModule(this.selectedTab);
     request.subscribe({
       next: () => {
         setTimeout(() => {
@@ -350,6 +365,29 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
         this.mqInfoMessage = '';
         this.loadQueues();
       }
+    });
+  }
+
+  loadElasticsearch(): void {
+    this.esLoading = true;
+    let pending = 3;
+    const settle = () => {
+      pending -= 1;
+      if (pending === 0) {
+        this.esLoading = false;
+      }
+    };
+    this.configService.getElasticsearchHealth().subscribe({
+      next: (health) => { this.esHealth = health; settle(); },
+      error: () => { this.esHealth = null; settle(); }
+    });
+    this.configService.getElasticsearchIndices().subscribe({
+      next: (indices) => { this.esIndices = indices || []; settle(); },
+      error: () => { this.esIndices = []; settle(); }
+    });
+    this.configService.getElasticsearchConfig().subscribe({
+      next: (config) => { this.esConfig = config; settle(); },
+      error: () => { this.esConfig = null; settle(); }
     });
   }
 

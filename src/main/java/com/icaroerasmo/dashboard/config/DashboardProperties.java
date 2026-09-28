@@ -13,6 +13,7 @@ public class DashboardProperties {
     private List<Module> modules = new ArrayList<>();
     private RabbitMq rabbitmq = new RabbitMq();
     private Go2Rtc go2rtc = new Go2Rtc();
+    private Elasticsearch elasticsearch = new Elasticsearch();
     private Push push = new Push();
     private String composeFile = "/cafofo/compose.yaml";
     private String envFile = "/cafofo/.env";
@@ -41,5 +42,11 @@ public class DashboardProperties {
     @Data
     public static class Go2Rtc {
         private String baseUrl;
+    }
+
+    @Data
+    public static class Elasticsearch {
+        private String baseUrl = "http://elasticsearch:9200";
+        private int ttlDays = 10;
     }
 }
