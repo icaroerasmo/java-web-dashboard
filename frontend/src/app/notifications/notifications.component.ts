@@ -41,6 +41,7 @@ export class NotificationsComponent implements OnChanges {
     if (changes['open'] && this.open) {
       this.resetAndLoad();
       this.subscribeToLive();
+      this.loadKinds();
     } else if (changes['open'] && !this.open) {
       this.unsubscribeFromLive();
     }
@@ -94,7 +95,6 @@ export class NotificationsComponent implements OnChanges {
           this.all = page.items;
           this.nextCursor = page.nextCursor;
           this.hasMore = page.hasMore;
-          this.recomputeKinds();
         },
         error: () => {
           this.loadingMore = false;
@@ -117,7 +117,6 @@ export class NotificationsComponent implements OnChanges {
           this.all.push(...fresh);
           this.nextCursor = page.nextCursor;
           this.hasMore = page.hasMore;
-          this.recomputeKinds();
           this.loadingMore = false;
         },
         error: () => {
@@ -149,7 +148,6 @@ export class NotificationsComponent implements OnChanges {
       }
       if (!this.all.some((n) => n.id === summary.id)) {
         this.all.unshift(summary);
-        this.recomputeKinds();
       }
     });
   }
@@ -161,8 +159,15 @@ export class NotificationsComponent implements OnChanges {
     }
   }
 
-  private recomputeKinds(): void {
-    this.kinds = Array.from(new Set(this.all.map((l) => l.kind ?? 'sem categoria'))).sort();
+  private loadKinds(): void {
+    this.notificationService.getKinds().subscribe({
+      next: (kinds) => {
+        this.kinds = kinds;
+      },
+      error: () => {
+        this.kinds = [];
+      }
+    });
   }
 
   filteredLogs(): NotificationSummary[] {

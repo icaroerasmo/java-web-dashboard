@@ -61,6 +61,10 @@ export class NotificationService {
     return `/api/notifications/media/${encodeURIComponent(fileId)}`;
   }
 
+  getKinds(): Observable<string[]> {
+    return this.http.get<string[]>('/api/notifications/kinds');
+  }
+
   getMediaText(fileId: string): Observable<string> {
     return this.http.get(this.mediaUrl(fileId), { responseType: 'text' });
   }
