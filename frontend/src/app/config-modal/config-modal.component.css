@@ -682,6 +682,135 @@
   display: none;
 }
 
+.es-config-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.es-config-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.es-config-label {
+  min-width: 170px;
+  flex-shrink: 0;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.es-config-value {
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  word-break: break-word;
+}
+
+.es-cluster-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.es-health-pill {
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+}
+
+.es-health-pill.green {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: var(--green);
+}
+
+.es-health-pill.yellow {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  color: var(--amber);
+}
+
+.es-health-pill.red {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.es-cluster-meta {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.es-index-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.es-index-row:hover {
+  background: var(--surface-hover);
+}
+
+.es-index-name {
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.es-index-health {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.es-index-health.green {
+  color: var(--green);
+}
+
+.es-index-health.yellow {
+  color: var(--amber);
+}
+
+.es-index-health.red {
+  color: #ef4444;
+}
+
+.es-index-docs {
+  color: var(--text-secondary);
+  font-size: 12px;
+  min-width: 90px;
+  text-align: right;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.es-index-size {
+  color: var(--text-faint);
+  font-size: 12px;
+  min-width: 70px;
+  text-align: right;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
 @media (max-width: 640px) {
   .modal-backdrop {
     padding: 0;

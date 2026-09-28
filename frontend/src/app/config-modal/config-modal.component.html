@@ -35,6 +35,12 @@
         </button>
         <button
           class="tab-btn"
+          [class.active]="selectedTab === 'elasticsearch'"
+          (click)="selectTab('elasticsearch')">
+          elasticsearch
+        </button>
+        <button
+          class="tab-btn"
           [class.active]="selectedTab === '__environment__'"
           (click)="selectTab('__environment__')">
           Environment
@@ -294,6 +300,97 @@
                 } @else {
                   Save
                 }
+              </button>
+            </div>
+          }
+        </div>
+      } @else if (isElasticsearchTab) {
+        <div class="tab-content">
+          @if (esLoading) {
+            <div class="loading-state">Loading Elasticsearch...</div>
+          }
+          @if (!esLoading) {
+            <div class="config-scroll">
+              @if (esConfig) {
+                <div class="section-block">
+                  <div class="section-header">
+                    <h4 class="section-label">Configuration</h4>
+                  </div>
+                  <div class="es-config-grid">
+                    <div class="es-config-row">
+                      <span class="es-config-label">Endpoint</span>
+                      <span class="es-config-value">{{ esConfig.baseUrl }}</span>
+                    </div>
+                    <div class="es-config-row">
+                      <span class="es-config-label">Log retention (TTL)</span>
+                      <span class="es-config-value">{{ esConfig.ttlDays }} days</span>
+                    </div>
+                    <div class="es-config-row">
+                      <span class="es-config-label">Indices</span>
+                      <span class="es-config-value">{{ esConfig.indexNotifications }}, {{ esConfig.indexLogs }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+              @if (esHealth) {
+                <div class="section-block">
+                  <div class="section-header">
+                    <h4 class="section-label">Cluster</h4>
+                  </div>
+                  <div class="es-cluster-status">
+                    <span
+                      class="es-health-pill"
+                      [class.green]="esHealth.status === 'green'"
+                      [class.yellow]="esHealth.status === 'yellow'"
+                      [class.red]="esHealth.status === 'red'">
+                      {{ esHealth.status }}
+                    </span>
+                    <span class="es-cluster-meta">{{ esHealth.cluster_name }} · {{ esHealth.number_of_nodes }} node(s) · v{{ esHealth.version }}</span>
+                  </div>
+                  <div class="es-config-grid">
+                    <div class="es-config-row">
+                      <span class="es-config-label">Active shards</span>
+                      <span class="es-config-value">{{ esHealth.active_shards }}</span>
+                    </div>
+                    <div class="es-config-row">
+                      <span class="es-config-label">Unassigned shards</span>
+                      <span class="es-config-value">{{ esHealth.unassigned_shards }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+              <div class="section-block">
+                <div class="section-header">
+                  <h4 class="section-label">Indices</h4>
+                </div>
+                @if (esIndices.length === 0) {
+                  <div class="mq-empty">No indices</div>
+                }
+                @for (idx of esIndices; track idx.name) {
+                  <div class="es-index-row">
+                    <span class="es-index-name">{{ idx.name }}</span>
+                    <span
+                      class="es-index-health"
+                      [class.green]="idx.health === 'green'"
+                      [class.yellow]="idx.health === 'yellow'"
+                      [class.red]="idx.health === 'red'">
+                      {{ idx.health }}
+                    </span>
+                    <span class="es-index-docs">{{ idx.docsCount }} docs</span>
+                    <span class="es-index-size">{{ idx.storeSize }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="save-row">
+              @if (restartMessage) {
+                @if (restarting) {
+                  <span class="spinner"></span>
+                }
+                <span class="restart-status" [class.error]="restartError">{{ restartMessage }}</span>
+              }
+              <button class="restart-btn" (click)="restart()" [disabled]="restarting">
+                Restart
               </button>
             </div>
           }
