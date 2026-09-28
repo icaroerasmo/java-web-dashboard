@@ -192,6 +192,9 @@
   padding: 1px 6px;
   flex-shrink: 0;
   white-space: nowrap;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .log-filename {
@@ -199,7 +202,10 @@
   font-size: 12px;
   font-family: monospace;
   flex: 1;
-  word-break: break-all;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .log-size {
