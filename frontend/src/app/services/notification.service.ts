@@ -17,13 +17,32 @@ export interface NotificationSummary {
   size: number | null;
 }
 
+export interface NotificationPage {
+  items: NotificationSummary[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
+export type NotificationType = 'notifications' | 'logs';
+
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   constructor(private http: HttpClient) {}
 
-  getNotifications(limit = 100, before?: number): Observable<NotificationSummary[]> {
-    const params = before !== undefined ? `?limit=${limit}&before=${before}` : `?limit=${limit}`;
-    return this.http.get<NotificationSummary[]>(`/api/notifications${params}`);
+  getNotifications(
+    type: NotificationType,
+    limit = 100,
+    cursor?: string,
+    text?: string
+  ): Observable<NotificationPage> {
+    let params = `type=${type}&limit=${limit}`;
+    if (cursor) {
+      params += `&cursor=${encodeURIComponent(cursor)}`;
+    }
+    if (text) {
+      params += `&text=${encodeURIComponent(text)}`;
+    }
+    return this.http.get<NotificationPage>(`/api/notifications?${params}`);
   }
 
   mediaUrl(fileId: string): string {

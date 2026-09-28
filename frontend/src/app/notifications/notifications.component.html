@@ -10,7 +10,7 @@
 
       @if (tab === 'notifications') {
         <div class="content" (scroll)="onScroll($event)">
-          @for (n of notifications(); track n.id) {
+          @for (n of all; track n.id) {
             <div class="notif-item">
               <div class="log-item">
                 <span class="log-time">{{ timeOf(n) }}</span>
@@ -33,7 +33,7 @@
               }
             </div>
           }
-          @if (notifications().length === 0) {
+          @if (all.length === 0) {
             <div class="empty">Sem notificações</div>
           }
           @if (loadingMore) {
@@ -43,6 +43,7 @@
       } @else {
         <div class="content" (scroll)="onScroll($event)">
           <div class="filters">
+            <input type="search" [(ngModel)]="searchText" (keyup.enter)="onSearch()" placeholder="Buscar no texto dos logs" />
             <select [(ngModel)]="selectedKind">
               <option value="all">Todos os tipos</option>
               @for (k of kinds; track k) {
