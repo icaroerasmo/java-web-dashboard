@@ -137,6 +137,17 @@
 
 .filters input[type="search"] {
   flex: 1;
+  min-width: 120px;
+}
+
+.filters input[type="date"],
+.filters input[type="number"] {
+  flex-shrink: 0;
+}
+
+.filters select {
+  flex: 0 0 150px;
+  max-width: 150px;
   min-width: 0;
 }
 
