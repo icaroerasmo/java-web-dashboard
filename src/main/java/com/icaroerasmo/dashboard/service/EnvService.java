@@ -51,6 +51,38 @@ public class EnvService {
         return new ArrayList<>(readEnvFile(Path.of(properties.getEnvFile())).values());
     }
 
+    public String getEnvValue(String key) {
+        Map<String, EnvVar> envValues = readEnvFile(Path.of(properties.getEnvFile()));
+        EnvVar stored = envValues.get(key);
+        return stored != null ? stored.getValue() : null;
+    }
+
+    public void updateEnvKeys(Map<String, String> updates) {
+        Path envFile = Path.of(properties.getEnvFile());
+        Map<String, EnvVar> current = readEnvFile(envFile);
+        Set<String> changedKeys = new HashSet<>();
+        for (Map.Entry<String, String> entry : updates.entrySet()) {
+            String key = entry.getKey();
+            if (key == null || key.isBlank()) {
+                continue;
+            }
+            String newValue = entry.getValue() != null ? entry.getValue() : "";
+            EnvVar old = current.get(key);
+            if (old == null || !Objects.equals(old.getValue(), newValue)) {
+                changedKeys.add(key);
+            }
+            EnvVar stored = new EnvVar();
+            stored.setKey(key);
+            stored.setValue(newValue);
+            stored.setSecret(old != null && old.isSecret());
+            current.put(key, stored);
+        }
+        writeEnvFile(envFile, current);
+        for (String service : findServicesReferencing(changedKeys)) {
+            applyToContainer(service);
+        }
+    }
+
     public void updateEnvVars(String moduleName, List<EnvVar> envVars) {
         updateFiles(moduleName, envVars);
         applyToContainer(moduleName);

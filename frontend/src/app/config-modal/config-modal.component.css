@@ -711,6 +711,16 @@
   word-break: break-word;
 }
 
+.es-config-input {
+  flex: 1;
+  max-width: 460px;
+}
+
+.es-config-input-num {
+  flex: none;
+  width: 90px;
+}
+
 .es-cluster-status {
   display: flex;
   align-items: center;
@@ -752,10 +762,17 @@
   font-size: 12px;
 }
 
-.es-index-row {
+.es-index-grid {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.es-index-row {
+  display: grid;
+  grid-template-columns: 180px 70px 90px 70px;
   gap: 12px;
+  align-items: center;
   padding: 6px 8px;
   border-radius: 4px;
   transition: background 0.2s;
@@ -765,12 +782,26 @@
   background: var(--surface-hover);
 }
 
+.es-index-header {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+
+.es-index-header:hover {
+  background: transparent;
+}
+
 .es-index-name {
   color: var(--text);
   font-size: 13px;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  flex: 1;
-  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -798,7 +829,6 @@
 .es-index-docs {
   color: var(--text-secondary);
   font-size: 12px;
-  min-width: 90px;
   text-align: right;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
 }
@@ -806,7 +836,6 @@
 .es-index-size {
   color: var(--text-faint);
   font-size: 12px;
-  min-width: 70px;
   text-align: right;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
 }
@@ -1009,5 +1038,26 @@
 
   .modal-container.detail-view .tab-content {
     padding-top: 54px;
+  }
+
+  .es-config-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .es-config-label {
+    min-width: 0;
+  }
+
+  .es-config-input {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .es-index-row {
+    grid-template-columns: 1fr 56px 70px 56px;
+    gap: 8px;
+    padding: 6px 4px;
   }
 }
