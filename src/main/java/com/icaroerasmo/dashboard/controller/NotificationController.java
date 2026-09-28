@@ -68,6 +68,20 @@ public class NotificationController {
         }
     }
 
+    @GetMapping("/notifications/kinds")
+    public List<String> getKinds() {
+        try {
+            String[] kinds = restClient.get()
+                    .uri(java.net.URI.create(notifierBaseUrl + "/api/notifications/kinds"))
+                    .retrieve()
+                    .body(String[].class);
+            return kinds != null ? List.of(kinds) : List.of();
+        } catch (Exception e) {
+            log.warn("Failed to fetch kinds from notifier: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
     @GetMapping("/notifications/media/{fileId}")
     public ResponseEntity<byte[]> getMedia(@PathVariable String fileId,
                                            @RequestParam(value = "filename", required = false) String filename) {

@@ -22,9 +22,10 @@ describe('NotificationsComponent', () => {
   }
 
   beforeEach(async () => {
-    notificationService = jasmine.createSpyObj('NotificationService', ['getNotifications', 'mediaUrl', 'getMediaText']);
+    notificationService = jasmine.createSpyObj('NotificationService', ['getNotifications', 'getKinds', 'mediaUrl', 'getMediaText']);
     notificationService.mediaUrl.and.returnValue('/api/notifications/media/x');
     notificationService.getMediaText.and.returnValue(of('log content'));
+    notificationService.getKinds.and.returnValue(of([]));
     await TestBed.configureTestingModule({
       imports: [NotificationsComponent],
       providers: [
