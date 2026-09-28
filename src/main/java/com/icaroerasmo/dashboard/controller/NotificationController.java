@@ -38,17 +38,19 @@ public class NotificationController {
     public NotificationPage getNotifications(@RequestParam(defaultValue = "notifications") String type,
                                              @RequestParam(defaultValue = "100") int limit,
                                              @RequestParam(required = false) String cursor,
-                                             @RequestParam(required = false) String text) {
+                                             @RequestParam(required = false) String text,
+                                             @RequestParam(required = false) String kind,
+                                             @RequestParam(required = false) String date,
+                                             @RequestParam(required = false) String hour) {
         try {
             StringBuilder url = new StringBuilder(notifierBaseUrl)
                     .append("/api/notifications?type=").append(type)
                     .append("&limit=").append(limit);
-            if (cursor != null && !cursor.isBlank()) {
-                url.append("&cursor=").append(URLEncoder.encode(cursor, StandardCharsets.UTF_8));
-            }
-            if (text != null && !text.isBlank()) {
-                url.append("&text=").append(URLEncoder.encode(text, StandardCharsets.UTF_8));
-            }
+            appendParam(url, "cursor", cursor);
+            appendParam(url, "text", text);
+            appendParam(url, "kind", kind);
+            appendParam(url, "date", date);
+            appendParam(url, "hour", hour);
             NotificationPage page = restClient.get()
                     .uri(java.net.URI.create(url.toString()))
                     .retrieve()
@@ -57,6 +59,12 @@ public class NotificationController {
         } catch (Exception e) {
             log.warn("Failed to fetch notifications from notifier: {}", e.getMessage());
             return new NotificationPage(List.of(), null, false);
+        }
+    }
+
+    private void appendParam(StringBuilder url, String name, String value) {
+        if (value != null && !value.isBlank()) {
+            url.append('&').append(name).append('=').append(URLEncoder.encode(value, StandardCharsets.UTF_8));
         }
     }
 

@@ -43,7 +43,7 @@ describe('NotificationsComponent', () => {
       open: { currentValue: true, previousValue: false, firstChange: true, isFirstChange: () => true }
     } as any);
 
-    expect(notificationService.getNotifications).toHaveBeenCalledWith('notifications', 100, undefined, undefined);
+    expect(notificationService.getNotifications).toHaveBeenCalledWith('notifications', 100, undefined, undefined, undefined, undefined, undefined);
     expect(component.all.length).toBe(1);
   });
 
@@ -55,7 +55,7 @@ describe('NotificationsComponent', () => {
 
     component.loadMore();
 
-    expect(notificationService.getNotifications).toHaveBeenCalledWith('notifications', 100, 'cur1', undefined);
+    expect(notificationService.getNotifications).toHaveBeenCalledWith('notifications', 100, 'cur1', undefined, undefined, undefined, undefined);
     expect(component.all.map((n) => n.id)).toEqual(['n3', 'n2', 'n1']);
     expect(component.hasMore).toBeFalse();
   });
@@ -73,7 +73,7 @@ describe('NotificationsComponent', () => {
     component.selectTab('logs');
 
     expect(component.tab).toBe('logs');
-    expect(notificationService.getNotifications).toHaveBeenCalledWith('logs', 100, undefined, undefined);
+    expect(notificationService.getNotifications).toHaveBeenCalledWith('logs', 100, undefined, undefined, undefined, undefined, undefined);
   });
 
   it('onSearch reloads passing the text query', () => {
@@ -81,7 +81,7 @@ describe('NotificationsComponent', () => {
     component.searchText = 'disco cheio';
     component.onSearch();
 
-    expect(notificationService.getNotifications).toHaveBeenCalledWith('notifications', 100, undefined, 'disco cheio');
+    expect(notificationService.getNotifications).toHaveBeenCalledWith('notifications', 100, undefined, 'disco cheio', undefined, undefined, undefined);
   });
 
   it('onScroll triggers loadMore near the bottom', () => {
