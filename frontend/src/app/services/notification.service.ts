@@ -33,7 +33,10 @@ export class NotificationService {
     type: NotificationType,
     limit = 100,
     cursor?: string,
-    text?: string
+    text?: string,
+    kind?: string,
+    date?: string,
+    hour?: string
   ): Observable<NotificationPage> {
     let params = `type=${type}&limit=${limit}`;
     if (cursor) {
@@ -41,6 +44,15 @@ export class NotificationService {
     }
     if (text) {
       params += `&text=${encodeURIComponent(text)}`;
+    }
+    if (kind) {
+      params += `&kind=${encodeURIComponent(kind)}`;
+    }
+    if (date) {
+      params += `&date=${encodeURIComponent(date)}`;
+    }
+    if (hour) {
+      params += `&hour=${encodeURIComponent(hour)}`;
     }
     return this.http.get<NotificationPage>(`/api/notifications?${params}`);
   }

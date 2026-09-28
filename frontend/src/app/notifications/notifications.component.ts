@@ -58,6 +58,25 @@ export class NotificationsComponent implements OnChanges {
     this.resetAndLoad();
   }
 
+  onFilterChange(): void {
+    this.resetAndLoad();
+  }
+
+  private kindParam(): string | undefined {
+    return this.selectedKind !== 'all' ? this.selectedKind : undefined;
+  }
+
+  private dateParam(): string | undefined {
+    return this.selectedDate || undefined;
+  }
+
+  private hourParam(): string | undefined {
+    if (this.selectedHour !== '' && this.selectedHour !== null && this.selectedHour !== undefined) {
+      return String(this.selectedHour).padStart(2, '0');
+    }
+    return undefined;
+  }
+
   private resetAndLoad(): void {
     this.all = [];
     this.nextCursor = null;
@@ -68,7 +87,8 @@ export class NotificationsComponent implements OnChanges {
 
   private loadHistory(): void {
     this.notificationService
-      .getNotifications(this.tab, this.pageSize, undefined, this.searchText || undefined)
+      .getNotifications(this.tab, this.pageSize, undefined, this.searchText || undefined,
+        this.kindParam(), this.dateParam(), this.hourParam())
       .subscribe({
         next: (page) => {
           this.all = page.items;
@@ -88,7 +108,8 @@ export class NotificationsComponent implements OnChanges {
     }
     this.loadingMore = true;
     this.notificationService
-      .getNotifications(this.tab, this.pageSize, this.nextCursor, this.searchText || undefined)
+      .getNotifications(this.tab, this.pageSize, this.nextCursor, this.searchText || undefined,
+        this.kindParam(), this.dateParam(), this.hourParam())
       .subscribe({
         next: (page) => {
           const existing = new Set(this.all.map((n) => n.id));
@@ -123,8 +144,7 @@ export class NotificationsComponent implements OnChanges {
         return;
       }
       const isLog = summary.mediaType === 'DOCUMENT';
-      const matchesTab = this.tab === 'logs' ? isLog : !isLog;
-      if (!matchesTab) {
+      if (this.tab === 'logs' && !isLog) {
         return;
       }
       if (!this.all.some((n) => n.id === summary.id)) {
@@ -146,18 +166,7 @@ export class NotificationsComponent implements OnChanges {
   }
 
   filteredLogs(): NotificationSummary[] {
-    let list = this.all;
-    if (this.selectedKind !== 'all') {
-      list = list.filter((l) => (l.kind ?? 'sem categoria') === this.selectedKind);
-    }
-    if (this.selectedDate) {
-      list = list.filter((l) => l.date === this.selectedDate);
-    }
-    if (this.selectedHour !== '' && this.selectedHour !== null && this.selectedHour !== undefined) {
-      const hour = String(this.selectedHour).padStart(2, '0');
-      list = list.filter((l) => l.hour === hour);
-    }
-    return list;
+    return this.all;
   }
 
   mediaUrl(n: NotificationSummary): string | null {
