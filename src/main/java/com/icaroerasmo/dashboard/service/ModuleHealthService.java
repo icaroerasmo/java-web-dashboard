@@ -17,11 +17,13 @@ public class ModuleHealthService {
 
     private final DashboardProperties properties;
     private final RestClient restClient;
+    private final EnvService envService;
     private final Map<String, String> statusCache = new ConcurrentHashMap<>();
 
-    public ModuleHealthService(DashboardProperties properties, RestClient.Builder builder) {
+    public ModuleHealthService(DashboardProperties properties, RestClient.Builder builder, EnvService envService) {
         this.properties = properties;
         this.restClient = builder.build();
+        this.envService = envService;
     }
 
     @Scheduled(fixedRate = 5000)
@@ -109,8 +111,12 @@ public class ModuleHealthService {
 
     private String checkElasticsearch() {
         try {
+            String baseUrl = envService.getEnvValue("ELASTICSEARCH_URL");
+            if (baseUrl == null || baseUrl.isBlank()) {
+                baseUrl = properties.getElasticsearch().getBaseUrl();
+            }
             ResponseEntity<Map> response = restClient.get()
-                    .uri(properties.getElasticsearch().getBaseUrl() + "/_cluster/health")
+                    .uri(baseUrl + "/_cluster/health")
                     .retrieve()
                     .toEntity(Map.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
