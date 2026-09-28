@@ -1,5 +1,6 @@
 package com.icaroerasmo.dashboard.controller;
 
+import com.icaroerasmo.dashboard.messaging.NotificationPage;
 import com.icaroerasmo.dashboard.messaging.NotificationSummary;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -32,25 +35,28 @@ public class NotificationController {
     }
 
     @GetMapping("/notifications")
-    public List<NotificationSummary> getNotifications(@RequestParam(defaultValue = "100") int limit,
-                                                      @RequestParam(required = false) Long before) {
+    public NotificationPage getNotifications(@RequestParam(defaultValue = "notifications") String type,
+                                             @RequestParam(defaultValue = "100") int limit,
+                                             @RequestParam(required = false) String cursor,
+                                             @RequestParam(required = false) String text) {
         try {
-            String url = notifierBaseUrl + "/api/notifications?limit={limit}";
-            Object[] params;
-            if (before != null) {
-                url += "&before={before}";
-                params = new Object[]{limit, before};
-            } else {
-                params = new Object[]{limit};
+            StringBuilder url = new StringBuilder(notifierBaseUrl)
+                    .append("/api/notifications?type=").append(type)
+                    .append("&limit=").append(limit);
+            if (cursor != null && !cursor.isBlank()) {
+                url.append("&cursor=").append(URLEncoder.encode(cursor, StandardCharsets.UTF_8));
             }
-            NotificationSummary[] summaries = restClient.get()
-                    .uri(url, params)
+            if (text != null && !text.isBlank()) {
+                url.append("&text=").append(URLEncoder.encode(text, StandardCharsets.UTF_8));
+            }
+            NotificationPage page = restClient.get()
+                    .uri(java.net.URI.create(url.toString()))
                     .retrieve()
-                    .body(NotificationSummary[].class);
-            return summaries != null ? List.of(summaries) : List.of();
+                    .body(NotificationPage.class);
+            return page != null ? page : new NotificationPage(List.of(), null, false);
         } catch (Exception e) {
             log.warn("Failed to fetch notifications from notifier: {}", e.getMessage());
-            return List.of();
+            return new NotificationPage(List.of(), null, false);
         }
     }
 
@@ -60,7 +66,7 @@ public class NotificationController {
         try {
             String url = notifierBaseUrl + "/api/media/" + fileId;
             if (filename != null && !filename.isBlank()) {
-                url += "?filename=" + java.net.URLEncoder.encode(filename, java.nio.charset.StandardCharsets.UTF_8);
+                url += "?filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8);
             }
             return restClient.get()
                     .uri(java.net.URI.create(url))

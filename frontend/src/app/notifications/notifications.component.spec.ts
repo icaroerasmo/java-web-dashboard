@@ -17,6 +17,10 @@ describe('NotificationsComponent', () => {
     };
   }
 
+  function page(items: NotificationSummary[], nextCursor: string | null = null, hasMore = false) {
+    return { items, nextCursor, hasMore };
+  }
+
   beforeEach(async () => {
     notificationService = jasmine.createSpyObj('NotificationService', ['getNotifications', 'mediaUrl', 'getMediaText']);
     notificationService.mediaUrl.and.returnValue('/api/notifications/media/x');
@@ -32,98 +36,64 @@ describe('NotificationsComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads the first page on open', () => {
-    notificationService.getNotifications.and.returnValue(of([summary('n1', 3000), summary('n2', 2000)]));
+  it('loads the first page of notifications on open', () => {
+    notificationService.getNotifications.and.returnValue(of(page([summary('n1', 3000)], 'cur1', true)));
     component.open = true;
     component.ngOnChanges({
       open: { currentValue: true, previousValue: false, firstChange: true, isFirstChange: () => true }
     } as any);
 
-    expect(notificationService.getNotifications).toHaveBeenCalledWith(100);
-    expect(component.all.length).toBe(2);
+    expect(notificationService.getNotifications).toHaveBeenCalledWith('notifications', 100, undefined, undefined);
+    expect(component.all.length).toBe(1);
   });
 
   it('loadMore appends older items and dedupes by id', () => {
     component.all = [summary('n3', 3000), summary('n2', 2000)];
-    notificationService.getNotifications.and.returnValue(of([summary('n2', 2000), summary('n1', 1000)]));
+    (component as any).nextCursor = 'cur1';
+    component.hasMore = true;
+    notificationService.getNotifications.and.returnValue(of(page([summary('n2', 2000), summary('n1', 1000)], 'cur2', false)));
 
     component.loadMore();
 
-    expect(notificationService.getNotifications).toHaveBeenCalledWith(100, 2000);
+    expect(notificationService.getNotifications).toHaveBeenCalledWith('notifications', 100, 'cur1', undefined);
     expect(component.all.map((n) => n.id)).toEqual(['n3', 'n2', 'n1']);
-  });
-
-  it('loadMore stops when a page is smaller than pageSize', () => {
-    component.all = [summary('n3', 3000), summary('n2', 2000)];
-    notificationService.getNotifications.and.returnValue(of([summary('n1', 1000)]));
-
-    component.loadMore();
-
     expect(component.hasMore).toBeFalse();
   });
 
-  it('loadMore does nothing while already loading or when exhausted', () => {
+  it('loadMore does nothing while exhausted or without cursor', () => {
     component.all = [summary('n1', 1000)];
-    component.loadingMore = true;
-    component.loadMore();
-    expect(notificationService.getNotifications).not.toHaveBeenCalled();
-
-    component.loadingMore = false;
     component.hasMore = false;
+    (component as any).nextCursor = null;
     component.loadMore();
     expect(notificationService.getNotifications).not.toHaveBeenCalled();
+  });
+
+  it('selectTab loads logs with type=logs', () => {
+    notificationService.getNotifications.and.returnValue(of(page([summary('n1', 1000)])));
+    component.selectTab('logs');
+
+    expect(component.tab).toBe('logs');
+    expect(notificationService.getNotifications).toHaveBeenCalledWith('logs', 100, undefined, undefined);
+  });
+
+  it('onSearch reloads passing the text query', () => {
+    notificationService.getNotifications.and.returnValue(of(page([])));
+    component.searchText = 'disco cheio';
+    component.onSearch();
+
+    expect(notificationService.getNotifications).toHaveBeenCalledWith('notifications', 100, undefined, 'disco cheio');
   });
 
   it('onScroll triggers loadMore near the bottom', () => {
     component.all = [summary('n1', 1000)];
-    notificationService.getNotifications.and.returnValue(of([]));
+    (component as any).nextCursor = 'cur1';
+    component.hasMore = true;
+    notificationService.getNotifications.and.returnValue(of(page([])));
     const el = { scrollTop: 800, clientHeight: 200, scrollHeight: 1000 } as HTMLElement;
 
     component.onScroll({ target: el } as any);
 
     expect(notificationService.getNotifications).toHaveBeenCalled();
-  });
-
-  it('logs() returns only DOCUMENT items', () => {
-    component.all = [
-      summary('d1', 3000),
-      { ...summary('p1', 2000), mediaType: 'PHOTO' },
-      { ...summary('a1', 1000), mediaType: 'ANIMATION' }
-    ];
-    component.hasMore = false;
-
-    const logs = component.logs();
-
-    expect(logs.map((l) => l.id)).toEqual(['d1']);
-    expect(notificationService.getNotifications).not.toHaveBeenCalled();
-  });
-
-  it('logs() triggers loadMore when there are fewer than pageSize logs', () => {
-    const size = (component as any).pageSize as number;
-    component.all = Array.from({ length: size - 1 }, (_, i) => summary('n' + i, 1000 - i));
-    notificationService.getNotifications.and.returnValue(of([]));
-
-    component.logs();
-
-    expect(notificationService.getNotifications).toHaveBeenCalled();
-  });
-
-  it('logs() does not trigger loadMore when at pageSize logs', () => {
-    const size = (component as any).pageSize as number;
-    component.all = Array.from({ length: size }, (_, i) => summary('n' + i, 1000 - i));
-
-    component.logs();
-
-    expect(notificationService.getNotifications).not.toHaveBeenCalled();
-  });
-
-  it('logs() does not trigger loadMore when exhausted', () => {
-    component.all = [summary('n1', 1000)];
-    component.hasMore = false;
-
-    component.logs();
-
-    expect(notificationService.getNotifications).not.toHaveBeenCalled();
   });
 
   it('sizeLabel formats bytes as Kb with one decimal', () => {

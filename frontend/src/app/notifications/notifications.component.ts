@@ -22,11 +22,13 @@ export class NotificationsComponent implements OnChanges {
   selectedKind = 'all';
   selectedDate = '';
   selectedHour = '';
+  searchText = '';
   expandedId: string | null = null;
   expandedLogId: string | null = null;
   loadingLogId: string | null = null;
   loadingMore = false;
-  hasMore = true;
+  hasMore = false;
+  private nextCursor: string | null = null;
   private readonly pageSize = 100;
   private logContents = new Map<string, string>();
 
@@ -37,57 +39,70 @@ export class NotificationsComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['open'] && this.open) {
-      this.loadHistory();
+      this.resetAndLoad();
       this.subscribeToLive();
     } else if (changes['open'] && !this.open) {
       this.unsubscribeFromLive();
     }
   }
 
-  private loadHistory(): void {
+  selectTab(tab: 'notifications' | 'logs'): void {
+    if (this.tab === tab) {
+      return;
+    }
+    this.tab = tab;
+    this.resetAndLoad();
+  }
+
+  onSearch(): void {
+    this.resetAndLoad();
+  }
+
+  private resetAndLoad(): void {
+    this.all = [];
+    this.nextCursor = null;
     this.hasMore = true;
     this.loadingMore = false;
-    this.notificationService.getNotifications(this.pageSize).subscribe({
-      next: (list) => {
-        this.all = list.sort((a, b) => b.timestamp - a.timestamp);
-        this.recomputeKinds();
-      },
-      error: () => {
-        this.loadingMore = false;
-      }
-    });
+    this.loadHistory();
+  }
+
+  private loadHistory(): void {
+    this.notificationService
+      .getNotifications(this.tab, this.pageSize, undefined, this.searchText || undefined)
+      .subscribe({
+        next: (page) => {
+          this.all = page.items;
+          this.nextCursor = page.nextCursor;
+          this.hasMore = page.hasMore;
+          this.recomputeKinds();
+        },
+        error: () => {
+          this.loadingMore = false;
+        }
+      });
   }
 
   loadMore(): void {
-    if (this.loadingMore || !this.hasMore || this.all.length === 0) {
-      return;
-    }
-    const oldest = this.all[this.all.length - 1]?.timestamp;
-    if (oldest === undefined) {
+    if (this.loadingMore || !this.hasMore || !this.nextCursor) {
       return;
     }
     this.loadingMore = true;
-    this.notificationService.getNotifications(this.pageSize, oldest).subscribe({
-      next: (list) => {
-        if (list.length === 0) {
-          this.hasMore = false;
+    this.notificationService
+      .getNotifications(this.tab, this.pageSize, this.nextCursor, this.searchText || undefined)
+      .subscribe({
+        next: (page) => {
+          const existing = new Set(this.all.map((n) => n.id));
+          const fresh = page.items.filter((n) => !existing.has(n.id));
+          this.all.push(...fresh);
+          this.nextCursor = page.nextCursor;
+          this.hasMore = page.hasMore;
+          this.recomputeKinds();
           this.loadingMore = false;
-          return;
+        },
+        error: () => {
+          this.loadingMore = false;
         }
-        const existing = new Set(this.all.map((n) => n.id));
-        const fresh = list.filter((n) => !existing.has(n.id));
-        this.all.push(...fresh);
-        this.all.sort((a, b) => b.timestamp - a.timestamp);
-        this.recomputeKinds();
-        if (list.length < this.pageSize) {
-          this.hasMore = false;
-        }
-        this.loadingMore = false;
-      },
-      error: () => {
-        this.loadingMore = false;
-      }
-    });
+      });
   }
 
   onScroll(event: Event): void {
@@ -104,7 +119,15 @@ export class NotificationsComponent implements OnChanges {
       return;
     }
     this.liveSub = this.ws.messages().subscribe((summary) => {
-      if (summary && summary.id && !this.all.some((n) => n.id === summary.id)) {
+      if (!summary || !summary.id) {
+        return;
+      }
+      const isLog = summary.mediaType === 'DOCUMENT';
+      const matchesTab = this.tab === 'logs' ? isLog : !isLog;
+      if (!matchesTab) {
+        return;
+      }
+      if (!this.all.some((n) => n.id === summary.id)) {
         this.all.unshift(summary);
         this.recomputeKinds();
       }
@@ -119,29 +142,11 @@ export class NotificationsComponent implements OnChanges {
   }
 
   private recomputeKinds(): void {
-    this.kinds = Array.from(new Set(this.logs().map((l) => l.kind ?? 'sem categoria'))).sort();
-  }
-
-  logs(): NotificationSummary[] {
-    const onlyLogs = this.all.filter((n) => n.mediaType === 'DOCUMENT');
-
-    if(onlyLogs.length < this.pageSize) {
-      this.loadMore();
-    }
-
-    return onlyLogs;
-  }
-
-  notifications(): NotificationSummary[] {
-    return this.all;
-  }
-
-  selectTab(tab: 'notifications' | 'logs'): void {
-    this.tab = tab;
+    this.kinds = Array.from(new Set(this.all.map((l) => l.kind ?? 'sem categoria'))).sort();
   }
 
   filteredLogs(): NotificationSummary[] {
-    let list = this.logs();
+    let list = this.all;
     if (this.selectedKind !== 'all') {
       list = list.filter((l) => (l.kind ?? 'sem categoria') === this.selectedKind);
     }
