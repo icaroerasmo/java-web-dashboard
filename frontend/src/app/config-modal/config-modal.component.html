@@ -318,12 +318,23 @@
                   </div>
                   <div class="es-config-grid">
                     <div class="es-config-row">
-                      <span class="es-config-label">Endpoint</span>
-                      <span class="es-config-value">{{ esConfig.baseUrl }}</span>
+                      <label class="es-config-label" for="es-endpoint">Endpoint</label>
+                      <input
+                        id="es-endpoint"
+                        type="text"
+                        [(ngModel)]="esConfig.baseUrl"
+                        class="field-input es-config-input"
+                        placeholder="http://elasticsearch:9200" />
                     </div>
                     <div class="es-config-row">
-                      <span class="es-config-label">Log retention (TTL)</span>
-                      <span class="es-config-value">{{ esConfig.ttlDays }} days</span>
+                      <label class="es-config-label" for="es-ttl">Log retention (TTL)</label>
+                      <input
+                        id="es-ttl"
+                        type="number"
+                        [(ngModel)]="esConfig.ttlDays"
+                        class="field-input es-config-input es-config-input-num"
+                        min="1" />
+                      <span class="es-config-value">days</span>
                     </div>
                     <div class="es-config-row">
                       <span class="es-config-label">Indices</span>
@@ -365,19 +376,28 @@
                 </div>
                 @if (esIndices.length === 0) {
                   <div class="mq-empty">No indices</div>
-                }
-                @for (idx of esIndices; track idx.name) {
-                  <div class="es-index-row">
-                    <span class="es-index-name">{{ idx.name }}</span>
-                    <span
-                      class="es-index-health"
-                      [class.green]="idx.health === 'green'"
-                      [class.yellow]="idx.health === 'yellow'"
-                      [class.red]="idx.health === 'red'">
-                      {{ idx.health }}
-                    </span>
-                    <span class="es-index-docs">{{ idx.docsCount }} docs</span>
-                    <span class="es-index-size">{{ idx.storeSize }}</span>
+                } @else {
+                  <div class="es-index-grid">
+                    <div class="es-index-row es-index-header">
+                      <span>name</span>
+                      <span>health</span>
+                      <span class="es-index-docs">docs</span>
+                      <span class="es-index-size">size</span>
+                    </div>
+                    @for (idx of esIndices; track idx.name) {
+                      <div class="es-index-row">
+                        <span class="es-index-name">{{ idx.name }}</span>
+                        <span
+                          class="es-index-health"
+                          [class.green]="idx.health === 'green'"
+                          [class.yellow]="idx.health === 'yellow'"
+                          [class.red]="idx.health === 'red'">
+                          {{ idx.health }}
+                        </span>
+                        <span class="es-index-docs">{{ idx.docsCount }}</span>
+                        <span class="es-index-size">{{ idx.storeSize }}</span>
+                      </div>
+                    }
                   </div>
                 }
               </div>
@@ -389,8 +409,17 @@
                 }
                 <span class="restart-status" [class.error]="restartError">{{ restartMessage }}</span>
               }
-              <button class="restart-btn" (click)="restart()" [disabled]="restarting">
+              <button class="restart-btn" (click)="restart()" [disabled]="restarting || saving">
                 Restart
+              </button>
+              <button class="save-btn" (click)="save()" [disabled]="saving || restarting">
+                @if (saving) {
+                  Saving...
+                } @else if (savedMessage) {
+                  <span class="saved-ok">{{ savedMessage }}</span>
+                } @else {
+                  Save
+                }
               </button>
             </div>
           }

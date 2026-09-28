@@ -8,6 +8,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
@@ -92,11 +94,39 @@ public class ElasticsearchController {
     public ResponseEntity<?> config() {
         DashboardProperties.Elasticsearch es = properties.getElasticsearch();
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("baseUrl", es.getBaseUrl());
-        result.put("ttlDays", es.getTtlDays());
+        result.put("baseUrl", baseUrl());
+        result.put("ttlDays", currentTtlDays(es));
         result.put("indexNotifications", "notifications");
         result.put("indexLogs", "logs");
         return ResponseEntity.ok(result);
+    }
+
+    @PutMapping("/config")
+    public ResponseEntity<?> updateConfig(@RequestBody Map<String, Object> request) {
+        try {
+            Map<String, String> updates = new LinkedHashMap<>();
+            Object url = request.get("baseUrl");
+            if (url != null && !String.valueOf(url).isBlank()) {
+                updates.put("ELASTICSEARCH_URL", String.valueOf(url).trim());
+            }
+            Object ttl = request.get("ttlDays");
+            if (ttl != null) {
+                int ttlDays = parseTtl(String.valueOf(ttl), -1);
+                if (ttlDays > 0) {
+                    updates.put("ELASTICSEARCH_LOG_TTL_DAYS", String.valueOf(ttlDays));
+                } else {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Invalid ttlDays"));
+                }
+            }
+            if (updates.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Nothing to update"));
+            }
+            envService.updateEnvKeys(updates);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.warn("Failed to update elasticsearch config: {}", e.getMessage());
+            return ResponseEntity.status(502).body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/restart")
@@ -110,7 +140,28 @@ public class ElasticsearchController {
         }
     }
 
+    private int currentTtlDays(DashboardProperties.Elasticsearch es) {
+        String ttl = envService.getEnvValue("ELASTICSEARCH_LOG_TTL_DAYS");
+        int parsed = parseTtl(ttl, es.getTtlDays());
+        return parsed > 0 ? parsed : es.getTtlDays();
+    }
+
+    private int parseTtl(String value, int fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+    }
+
     private String baseUrl() {
+        String url = envService.getEnvValue("ELASTICSEARCH_URL");
+        if (url != null && !url.isBlank()) {
+            return url;
+        }
         return properties.getElasticsearch().getBaseUrl();
     }
 }

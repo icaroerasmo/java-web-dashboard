@@ -221,9 +221,32 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
       this.saveGo2Rtc();
       return;
     }
+    if (this.isElasticsearchTab) {
+      this.saveElasticsearch();
+      return;
+    }
     if (!this.configs[this.selectedTab]) return;
     this.saving = true;
     this.configService.saveConfig(this.selectedTab, this.configs[this.selectedTab]).subscribe({
+      next: () => {
+        this.saving = false;
+        this.savedMessage = 'Saved';
+        setTimeout(() => this.savedMessage = '', 2000);
+      },
+      error: () => {
+        this.saving = false;
+      }
+    });
+  }
+
+  saveElasticsearch(): void {
+    if (!this.esConfig) return;
+    this.saving = true;
+    this.savedMessage = '';
+    this.configService.saveElasticsearchConfig({
+      baseUrl: this.esConfig.baseUrl,
+      ttlDays: Number(this.esConfig.ttlDays)
+    }).subscribe({
       next: () => {
         this.saving = false;
         this.savedMessage = 'Saved';
