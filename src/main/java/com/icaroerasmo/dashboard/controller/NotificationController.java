@@ -85,10 +85,11 @@ public class NotificationController {
     @GetMapping("/notifications/{id}")
     public ResponseEntity<NotificationSummary> getNotification(@PathVariable String id) {
         try {
-            return restClient.get()
+            NotificationSummary summary = restClient.get()
                     .uri(java.net.URI.create(notifierBaseUrl + "/api/notifications/" + id))
                     .retrieve()
-                    .toEntity(NotificationSummary.class);
+                    .body(NotificationSummary.class);
+            return summary != null ? ResponseEntity.ok(summary) : ResponseEntity.notFound().build();
         } catch (Exception e) {
             log.warn("Failed to fetch notification {} from notifier: {}", id, e.getMessage());
             return ResponseEntity.status(502).build();
