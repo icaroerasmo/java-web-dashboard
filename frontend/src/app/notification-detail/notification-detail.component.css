@@ -116,6 +116,13 @@
   word-break: break-word;
 }
 
+.detail-not-identified {
+  color: #ef4444;
+  font-size: 14px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
 .detail-summary {
   color: var(--text);
   font-size: 14px;
