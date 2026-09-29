@@ -23,11 +23,16 @@
               </div>
               @if (isExpanded(n) && isMedia(n) && n.fileId) {
                 <div class="expanded-media">
-                @if (n.mediaType === 'ANIMATION') {
-                  <video [src]="mediaUrl(n)" controls autoplay muted loop playsinline class="expanded-video"></video>
-                } @else {
-                  <img [src]="mediaUrl(n)" class="expanded-img" alt="" />
-                }
+                  <div class="expanded-media-frame">
+                    @if (isMediaLoading(n)) {
+                      <div class="media-loading"><span class="media-spinner"></span></div>
+                    }
+                    @if (n.mediaType === 'ANIMATION') {
+                      <video [src]="mediaUrl(n)" controls autoplay muted loop playsinline class="expanded-video" [class.hidden]="isMediaLoading(n)" (loadeddata)="onMediaLoaded(n.id)" (error)="onMediaLoaded(n.id)"></video>
+                    } @else {
+                      <img [src]="mediaUrl(n)" class="expanded-img" [class.hidden]="isMediaLoading(n)" alt="" (load)="onMediaLoaded(n.id)" (error)="onMediaLoaded(n.id)" />
+                    }
+                  </div>
                   @if (n.personNames && n.personNames.length > 0) {
                     <div class="expanded-people">
                       <span class="expanded-people-label">Identificado:</span>

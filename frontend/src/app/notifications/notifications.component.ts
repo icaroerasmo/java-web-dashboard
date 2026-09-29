@@ -31,6 +31,7 @@ export class NotificationsComponent implements OnChanges {
   private nextCursor: string | null = null;
   private readonly pageSize = 100;
   private logContents = new Map<string, string>();
+  private loadedMedia = new Set<string>();
 
   constructor(
     private notificationService: NotificationService,
@@ -192,6 +193,14 @@ export class NotificationsComponent implements OnChanges {
 
   toggleExpand(n: NotificationSummary): void {
     this.expandedId = this.isExpanded(n) ? null : n.id;
+  }
+
+  onMediaLoaded(id: string): void {
+    this.loadedMedia.add(id);
+  }
+
+  isMediaLoading(n: NotificationSummary): boolean {
+    return this.isMedia(n) && !!n.fileId && !this.loadedMedia.has(n.id);
   }
 
   openMedia(n: NotificationSummary): void {

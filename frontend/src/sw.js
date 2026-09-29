@@ -1,6 +1,16 @@
 // Cafofo service worker — receives Web Push notifications and shows them even
 // when the PWA is closed. No caching here: the dashboard is a LAN app.
 
+// Activate new versions immediately (no stale-SW window where an old
+// notificationclick handler keeps running).
+self.addEventListener('install', () => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
 self.addEventListener('push', (event) => {
   let data = {};
   try {

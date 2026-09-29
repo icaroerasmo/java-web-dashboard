@@ -7,16 +7,24 @@
         <div class="detail-loading">Carregando…</div>
       }
       @if (error) {
-        <div class="detail-error">Não foi possível carregar a notificação.</div>
+        <div class="detail-error">
+          <p>Não foi possível carregar a notificação.</p>
+          <button class="detail-retry" (click)="retry()">Tentar novamente</button>
+        </div>
       }
       @if (notification) {
         <div class="detail-content">
           @if (isMedia(notification) && notification.fileId) {
-            @if (notification.mediaType === 'ANIMATION') {
-              <video [src]="mediaUrl(notification)" controls autoplay muted loop playsinline class="detail-media"></video>
-            } @else {
-              <img [src]="mediaUrl(notification)" class="detail-media" alt="" />
-            }
+            <div class="detail-media-frame">
+              @if (isMediaLoading(notification)) {
+                <div class="detail-media-loading"><span class="detail-spinner"></span></div>
+              }
+              @if (notification.mediaType === 'ANIMATION') {
+                <video [src]="mediaUrl(notification)" controls autoplay muted loop playsinline class="detail-media" [class.hidden]="isMediaLoading(notification)" (loadeddata)="onMediaLoaded(notification.id)" (error)="onMediaLoaded(notification.id)"></video>
+              } @else {
+                <img [src]="mediaUrl(notification)" class="detail-media" [class.hidden]="isMediaLoading(notification)" alt="" (load)="onMediaLoaded(notification.id)" (error)="onMediaLoaded(notification.id)" />
+              }
+            </div>
           }
           @if (notification.personNames && notification.personNames.length > 0) {
             <div class="detail-people">👤 {{ notification.personNames.join(', ') }}</div>
