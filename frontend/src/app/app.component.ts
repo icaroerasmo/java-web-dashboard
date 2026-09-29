@@ -805,6 +805,11 @@ player.video.muted = !player.video.muted;
     this.notificationDetailId = null;
   }
 
+  openListFromNotification(): void {
+    this.notificationDetailId = null;
+    this.openNotifications();
+  }
+
   private setupNotifications(): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;

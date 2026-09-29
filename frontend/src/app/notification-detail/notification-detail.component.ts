@@ -12,6 +12,7 @@ import { NotificationService, NotificationSummary } from '../services/notificati
 export class NotificationDetailComponent implements OnChanges {
   @Input() notificationId: string | null = null;
   @Output() close = new EventEmitter<void>();
+  @Output() openList = new EventEmitter<void>();
 
   notification: NotificationSummary | null = null;
   loading = false;
@@ -38,6 +39,11 @@ export class NotificationDetailComponent implements OnChanges {
       next: (n) => {
         this.notification = n;
         this.loading = false;
+        if (!this.isMedia(n)) {
+          // Not a photo/animation — there is nothing to show in this modal,
+          // so fall back to the notifications list.
+          this.openList.emit();
+        }
       },
       error: (err) => {
         console.error('Failed to load notification', this.notificationId, err);
