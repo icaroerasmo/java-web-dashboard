@@ -82,6 +82,19 @@ public class NotificationController {
         }
     }
 
+    @GetMapping("/notifications/{id}")
+    public ResponseEntity<NotificationSummary> getNotification(@PathVariable String id) {
+        try {
+            return restClient.get()
+                    .uri(java.net.URI.create(notifierBaseUrl + "/api/notifications/" + id))
+                    .retrieve()
+                    .toEntity(NotificationSummary.class);
+        } catch (Exception e) {
+            log.warn("Failed to fetch notification {} from notifier: {}", id, e.getMessage());
+            return ResponseEntity.status(502).build();
+        }
+    }
+
     @GetMapping("/notifications/media/{fileId}")
     public ResponseEntity<byte[]> getMedia(@PathVariable String fileId,
                                            @RequestParam(value = "filename", required = false) String filename) {

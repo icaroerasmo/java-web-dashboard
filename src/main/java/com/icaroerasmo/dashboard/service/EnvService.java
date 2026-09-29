@@ -57,6 +57,35 @@ public class EnvService {
         return stored != null ? stored.getValue() : null;
     }
 
+    /**
+     * Resolves a config value that may be a variable reference ({@code ${VAR}} or
+     * {@code ${VAR:-default}}). The variable is looked up first in the {@code .env}
+     * file, then in the process environment. Literal values (no reference) are
+     * returned unchanged. Returns {@code null} when the reference cannot be resolved
+     * and has no default — callers should then reject the value instead of writing a
+     * broken literal reference into {@code .env}.
+     */
+    public String resolveEnvRef(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        Matcher matcher = REF_PATTERN.matcher(trimmed);
+        if (!matcher.matches()) {
+            return trimmed;
+        }
+        String key = matcher.group(1);
+        String defaultValue = matcher.group(2);
+        String resolved = getEnvValue(key);
+        if (resolved == null || resolved.isBlank()) {
+            resolved = System.getenv(key);
+        }
+        if (resolved == null || resolved.isBlank()) {
+            return defaultValue;
+        }
+        return resolved;
+    }
+
     public void updateEnvKeys(Map<String, String> updates) {
         Path envFile = Path.of(properties.getEnvFile());
         Map<String, EnvVar> current = readEnvFile(envFile);

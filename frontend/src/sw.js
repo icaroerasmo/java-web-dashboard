@@ -24,13 +24,16 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = (event.notification.data && event.notification.data.url) || '/';
+  const id = (event.notification.data && event.notification.data.id) || '';
+  const url = id ? ('/?notification=' + encodeURIComponent(id)) : '/';
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
         if ('focus' in client) {
-          client.navigate(url);
+          if (id) {
+            client.postMessage({ type: 'open-notification', id });
+          }
           return client.focus();
         }
       }

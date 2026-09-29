@@ -28,6 +28,12 @@
                 } @else {
                   <img [src]="mediaUrl(n)" class="expanded-img" alt="" />
                 }
+                  @if (n.personNames && n.personNames.length > 0) {
+                    <div class="expanded-people">
+                      <span class="expanded-people-label">Identificado:</span>
+                      <span class="expanded-people-names">{{ n.personNames.join(', ') }}</span>
+                    </div>
+                  }
                   <div class="expanded-text">{{ n.summary }}</div>
                 </div>
               }

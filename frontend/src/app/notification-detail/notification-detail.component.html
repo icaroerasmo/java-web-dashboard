@@ -1,0 +1,30 @@
+@if (notificationId) {
+  <div class="detail-backdrop" (click)="onClose()">
+    <div class="detail-container" (click)="$event.stopPropagation()">
+      <button class="detail-close" (click)="onClose()">&times;</button>
+
+      @if (loading) {
+        <div class="detail-loading">Carregando…</div>
+      }
+      @if (error) {
+        <div class="detail-error">Não foi possível carregar a notificação.</div>
+      }
+      @if (notification) {
+        <div class="detail-content">
+          @if (isMedia(notification) && notification.fileId) {
+            @if (notification.mediaType === 'ANIMATION') {
+              <video [src]="mediaUrl(notification)" controls autoplay muted loop playsinline class="detail-media"></video>
+            } @else {
+              <img [src]="mediaUrl(notification)" class="detail-media" alt="" />
+            }
+          }
+          @if (notification.personNames && notification.personNames.length > 0) {
+            <div class="detail-people">👤 {{ notification.personNames.join(', ') }}</div>
+          }
+          <div class="detail-summary">{{ notification.summary }}</div>
+          <div class="detail-meta">{{ timeOf(notification) }} · {{ notification.sender }}</div>
+        </div>
+      }
+    </div>
+  </div>
+}

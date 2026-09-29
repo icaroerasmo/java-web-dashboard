@@ -316,6 +316,28 @@
   word-break: break-word;
 }
 
+.expanded-people {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.expanded-people-label {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.expanded-people-names {
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
 .empty {
   color: var(--text-faint);
   font-size: 14px;

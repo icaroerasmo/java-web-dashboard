@@ -8,6 +8,7 @@ import { NotificationWebSocketService } from './services/notification-websocket.
 import { PushService } from './services/push.service';
 import { NotificationSummary } from './services/notification.service';
 import { NotificationsComponent } from './notifications/notifications.component';
+import { NotificationDetailComponent } from './notification-detail/notification-detail.component';
 import { computeGrid, CameraGrid } from './services/grid-layout';
 import { buildDetectionMap } from './services/detection-map';
 
@@ -26,7 +27,7 @@ interface CameraStream {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MenuComponent, ConfigModalComponent, NotificationsComponent],
+  imports: [CommonModule, MenuComponent, ConfigModalComponent, NotificationsComponent, NotificationDetailComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -37,6 +38,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   menuOpen = false;
   configModalOpen = false;
   notificationsOpen = false;
+  notificationDetailId: string | null = null;
   theme: 'dark' | 'light' = 'dark';
   presentationMode = false;
 
@@ -144,6 +146,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     const frozen = Number(params.get('frozen'));
     if (frozen > 0) {
       this.frozenSeconds = frozen;
+    }
+    const notificationId = params.get('notification');
+    if (notificationId) {
+      this.notificationDetailId = notificationId;
     }
   }
 
@@ -791,6 +797,14 @@ player.video.muted = !player.video.muted;
     this.notificationsOpen = false;
   }
 
+  openNotificationDetail(id: string): void {
+    this.notificationDetailId = id;
+  }
+
+  closeNotificationDetail(): void {
+    this.notificationDetailId = null;
+  }
+
   private setupNotifications(): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;
@@ -800,6 +814,9 @@ player.video.muted = !player.video.muted;
       this.showBrowserNotification(summary);
     });
     this.pushService.init();
+    this.pushService.notificationClicked$.subscribe((id) => {
+      this.openNotificationDetail(id);
+    });
   }
 
   private showBrowserNotification(summary: NotificationSummary): void {

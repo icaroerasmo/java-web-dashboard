@@ -15,6 +15,7 @@ export interface NotificationSummary {
   date: string | null;
   hour: string | null;
   size: number | null;
+  personNames: string[] | null;
 }
 
 export interface NotificationPage {
@@ -59,6 +60,10 @@ export class NotificationService {
 
   mediaUrl(fileId: string): string {
     return `/api/notifications/media/${encodeURIComponent(fileId)}`;
+  }
+
+  getNotification(id: string): Observable<NotificationSummary> {
+    return this.http.get<NotificationSummary>(`/api/notifications/${encodeURIComponent(id)}`);
   }
 
   getKinds(): Observable<string[]> {
