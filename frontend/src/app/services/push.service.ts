@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Subject } from 'rxjs';
 
@@ -8,7 +8,7 @@ export class PushService {
   /** Emits the notification id when the user clicks a received browser notification. */
   notificationClicked$ = this.notificationClickedSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private zone: NgZone) {}
 
   /**
    * Registers the service worker, requests notification permission and
@@ -35,7 +35,7 @@ export class PushService {
       navigator.serviceWorker.addEventListener('message', (event: MessageEvent) => {
         const data = event.data;
         if (data && data.type === 'open-notification' && data.id) {
-          this.notificationClickedSubject.next(data.id);
+          this.zone.run(() => this.notificationClickedSubject.next(data.id));
         }
       });
 

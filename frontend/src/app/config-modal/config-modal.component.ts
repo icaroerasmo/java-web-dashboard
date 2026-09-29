@@ -245,7 +245,7 @@ export class ConfigModalComponent implements OnChanges, OnDestroy {
     this.savedMessage = '';
     this.configService.saveElasticsearchConfig({
       baseUrl: this.esConfig.baseUrl,
-      ttlDays: Number(this.esConfig.ttlDays)
+      ttlDays: this.esConfig.ttlDays
     }).subscribe({
       next: () => {
         this.saving = false;

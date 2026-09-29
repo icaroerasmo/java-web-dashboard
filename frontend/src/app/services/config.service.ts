@@ -78,7 +78,7 @@ export class ConfigService {
     return this.http.get<any>('/api/elasticsearch/config');
   }
 
-  saveElasticsearchConfig(config: { baseUrl: string; ttlDays: number }): Observable<any> {
+  saveElasticsearchConfig(config: { baseUrl: string; ttlDays: string }): Observable<any> {
     return this.http.put<any>('/api/elasticsearch/config', config);
   }
 
