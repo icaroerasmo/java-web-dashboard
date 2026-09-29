@@ -27,10 +27,8 @@
             </div>
           }
           @if (notification.personNames && notification.personNames.length > 0) {
-            <div class="detail-people">👤 {{ notification.personNames.join(', ') }}</div>
+            <div class="detail-people">detected: {{ notification.personNames.join(', ') }}</div>
           }
-          <div class="detail-summary">{{ notification.summary }}</div>
-          <div class="detail-meta">{{ timeOf(notification) }} · {{ notification.sender }}</div>
         </div>
       }
     </div>
