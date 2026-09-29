@@ -177,10 +177,9 @@ public class ElasticsearchController {
     }
 
     private String baseUrl() {
-        String reference = nested(fetchNotifierConfig(), DEFAULT_ES_URI, "spring", "elasticsearch", "uris");
-        String resolved = envService.resolveEnvRef(reference);
-        if (resolved != null && !resolved.isBlank()) {
-            return resolved;
+        String url = envService.getEnvValue("ELASTICSEARCH_URL");
+        if (url != null && !url.isBlank()) {
+            return url;
         }
         return properties.getElasticsearch().getBaseUrl();
     }
