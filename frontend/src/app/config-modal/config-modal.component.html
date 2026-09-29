@@ -330,11 +330,10 @@
                       <label class="es-config-label" for="es-ttl">Log retention (TTL)</label>
                       <input
                         id="es-ttl"
-                        type="number"
+                        type="text"
                         [(ngModel)]="esConfig.ttlDays"
-                        class="field-input es-config-input es-config-input-num"
-                        min="1" />
-                      <span class="es-config-value">days</span>
+                        class="field-input es-config-input"
+                        placeholder="${ELASTICSEARCH_LOG_TTL_DAYS:10}" />
                     </div>
                     <div class="es-config-row">
                       <span class="es-config-label">Indices</span>
