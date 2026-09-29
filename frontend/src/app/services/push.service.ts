@@ -22,6 +22,14 @@ export class PushService {
         || !('Notification' in window)) {
       return;
     }
+    // Register the click-message listener early so it is active regardless of the
+    // async push setup below (otherwise a click can be missed on slow connections).
+    navigator.serviceWorker.addEventListener('message', (event: MessageEvent) => {
+      const data = event.data;
+      if (data && data.type === 'open-notification' && data.id) {
+        this.zone.run(() => this.notificationClickedSubject.next(data.id));
+      }
+    });
     try {
       const { publicKey } = await firstValueFrom(
         this.http.get<{ publicKey: string }>('/api/push/public-key')
@@ -31,13 +39,6 @@ export class PushService {
       }
 
       const registration = await navigator.serviceWorker.register('/sw.js');
-
-      navigator.serviceWorker.addEventListener('message', (event: MessageEvent) => {
-        const data = event.data;
-        if (data && data.type === 'open-notification' && data.id) {
-          this.zone.run(() => this.notificationClickedSubject.next(data.id));
-        }
-      });
 
       if (Notification.permission === 'default') {
         await Notification.requestPermission();

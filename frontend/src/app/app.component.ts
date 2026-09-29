@@ -833,7 +833,7 @@ player.video.muted = !player.video.muted;
       });
       notification.onclick = () => {
         window.focus();
-        this.openNotifications();
+        this.openNotificationDetail(summary.id);
         notification.close();
       };
     } catch (e) {

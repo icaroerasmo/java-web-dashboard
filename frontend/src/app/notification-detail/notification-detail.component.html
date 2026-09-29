@@ -26,11 +26,15 @@
               }
             </div>
           }
-          @if (notification.personNames && notification.personNames.length > 0) {
-            <div class="detail-people">
-              <span class="detail-people-label">Identificado:</span>
-              <span class="detail-people-names">{{ notification.personNames.join(', ') }}</span>
-            </div>
+          @if (isMedia(notification)) {
+            @if (notification.personNames && notification.personNames.length > 0) {
+              <div class="detail-people">
+                <span class="detail-people-label">Identificado:</span>
+                <span class="detail-people-names">{{ notification.personNames.join(', ') }}</span>
+              </div>
+            } @else {
+              <div class="detail-not-identified">Não identificado</div>
+            }
           }
         </div>
       }

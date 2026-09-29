@@ -38,6 +38,8 @@
                       <span class="expanded-people-label">Identificado:</span>
                       <span class="expanded-people-names">{{ n.personNames.join(', ') }}</span>
                     </div>
+                  } @else {
+                    <div class="expanded-not-identified">Não identificado</div>
                   }
                 </div>
               }
