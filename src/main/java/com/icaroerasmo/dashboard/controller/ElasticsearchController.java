@@ -107,11 +107,19 @@ public class ElasticsearchController {
             Map<String, String> updates = new LinkedHashMap<>();
             Object url = request.get("baseUrl");
             if (url != null && !String.valueOf(url).isBlank()) {
-                updates.put("ELASTICSEARCH_URL", String.valueOf(url).trim());
+                String resolved = envService.resolveEnvRef(String.valueOf(url).trim());
+                if (resolved == null || resolved.isBlank()) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Cannot resolve variable in baseUrl"));
+                }
+                updates.put("ELASTICSEARCH_URL", resolved);
             }
             Object ttl = request.get("ttlDays");
             if (ttl != null) {
-                int ttlDays = parseTtl(String.valueOf(ttl), -1);
+                String resolvedTtl = envService.resolveEnvRef(String.valueOf(ttl));
+                if (resolvedTtl == null || resolvedTtl.isBlank()) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Cannot resolve variable in ttlDays"));
+                }
+                int ttlDays = parseTtl(resolvedTtl, -1);
                 if (ttlDays > 0) {
                     updates.put("ELASTICSEARCH_LOG_TTL_DAYS", String.valueOf(ttlDays));
                 } else {

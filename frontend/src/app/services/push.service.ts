@@ -1,9 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class PushService {
+  private notificationClickedSubject = new Subject<string>();
+  /** Emits the notification id when the user clicks a received browser notification. */
+  notificationClicked$ = this.notificationClickedSubject.asObservable();
+
   constructor(private http: HttpClient) {}
 
   /**
@@ -27,6 +31,13 @@ export class PushService {
       }
 
       const registration = await navigator.serviceWorker.register('/sw.js');
+
+      navigator.serviceWorker.addEventListener('message', (event: MessageEvent) => {
+        const data = event.data;
+        if (data && data.type === 'open-notification' && data.id) {
+          this.notificationClickedSubject.next(data.id);
+        }
+      });
 
       if (Notification.permission === 'default') {
         await Notification.requestPermission();

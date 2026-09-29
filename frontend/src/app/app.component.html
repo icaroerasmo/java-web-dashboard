@@ -170,3 +170,9 @@
   [open]="notificationsOpen"
   (close)="closeNotifications()"
 />
+
+<!-- Single notification detail (opened from a browser notification click) -->
+<app-notification-detail
+  [notificationId]="notificationDetailId"
+  (close)="closeNotificationDetail()"
+/>

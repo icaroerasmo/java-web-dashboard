@@ -13,7 +13,8 @@ describe('NotificationsComponent', () => {
     return {
       id, sender: 'recorder', mediaType: 'DOCUMENT', kind: 'log',
       summary: 'summary ' + id, fileId: 'file' + id, filename: 'log.txt',
-      sentAt: null, timestamp, date: '2026-09-25', hour: '10', size: 1024
+      sentAt: null, timestamp, date: '2026-09-25', hour: '10', size: 1024,
+      personNames: null
     };
   }
 

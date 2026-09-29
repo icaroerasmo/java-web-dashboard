@@ -244,6 +244,15 @@ class EnvServiceTest {
         assertTrue(envContent.contains("TELEGRAM_CHAT_ID=12345"));
     }
 
+    @Test
+    void resolveEnvRef_resolvesVariablesAndLiterals() {
+        assertEquals("http://elasticsearch:9200", envService.resolveEnvRef("http://elasticsearch:9200"));
+        assertEquals("rabbitmq", envService.resolveEnvRef("${RABBITMQ_HOST}"));
+        assertEquals("rabbitmq", envService.resolveEnvRef("${RABBITMQ_HOST:-localhost}"));
+        assertNull(envService.resolveEnvRef("${TOTALLY_UNKNOWN_ENV_VAR_XYZ}"));
+        assertEquals("fallback", envService.resolveEnvRef("${TOTALLY_UNKNOWN_ENV_VAR_XYZ:-fallback}"));
+    }
+
     private static final String COMPOSE_YAML = """
             version: "3.9"
 
