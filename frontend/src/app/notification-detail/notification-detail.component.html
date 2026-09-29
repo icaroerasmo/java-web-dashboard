@@ -27,7 +27,10 @@
             </div>
           }
           @if (notification.personNames && notification.personNames.length > 0) {
-            <div class="detail-people">detected: {{ notification.personNames.join(', ') }}</div>
+            <div class="detail-people">
+              <span class="detail-people-label">Identificado:</span>
+              <span class="detail-people-names">{{ notification.personNames.join(', ') }}</span>
+            </div>
           }
         </div>
       }
