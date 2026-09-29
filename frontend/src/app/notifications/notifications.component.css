@@ -338,6 +338,44 @@
   word-break: break-word;
 }
 
+.expanded-media-frame {
+  position: relative;
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  border-radius: 6px;
+}
+
+.media-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: notif-spin 0.8s linear infinite;
+}
+
+.expanded-media-frame .hidden {
+  display: none;
+}
+
+@keyframes notif-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .empty {
   color: var(--text-faint);
   font-size: 14px;

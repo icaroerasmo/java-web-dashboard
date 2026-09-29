@@ -16,6 +16,7 @@ export class NotificationDetailComponent implements OnChanges {
   notification: NotificationSummary | null = null;
   loading = false;
   error = false;
+  private loadedMedia = new Set<string>();
 
   constructor(private notificationService: NotificationService) {}
 
@@ -38,11 +39,24 @@ export class NotificationDetailComponent implements OnChanges {
         this.notification = n;
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Failed to load notification', this.notificationId, err);
         this.error = true;
         this.loading = false;
       }
     });
+  }
+
+  retry(): void {
+    this.load();
+  }
+
+  onMediaLoaded(id: string): void {
+    this.loadedMedia.add(id);
+  }
+
+  isMediaLoading(n: NotificationSummary): boolean {
+    return this.isMedia(n) && !!n.fileId && !this.loadedMedia.has(n.id);
   }
 
   mediaUrl(n: NotificationSummary): string {
