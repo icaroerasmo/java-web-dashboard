@@ -63,6 +63,9 @@ public class WebPushService {
         if (pushService == null || summary == null) {
             return;
         }
+        if (!summary.browserNotify()) {
+            return;
+        }
         String payload;
         try {
             payload = objectMapper.writeValueAsString(Map.of(

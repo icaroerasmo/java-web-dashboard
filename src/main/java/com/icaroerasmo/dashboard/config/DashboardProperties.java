@@ -15,6 +15,7 @@ public class DashboardProperties {
     private Go2Rtc go2rtc = new Go2Rtc();
     private Elasticsearch elasticsearch = new Elasticsearch();
     private Push push = new Push();
+    private Recorder recorder = new Recorder();
     private String composeFile = "/cafofo/compose.yaml";
     private String envFile = "/cafofo/.env";
     private String podmanComposeBinary = "docker-compose";
@@ -48,5 +49,10 @@ public class DashboardProperties {
     public static class Elasticsearch {
         private String baseUrl = "http://elasticsearch:9200";
         private int ttlDays = 10;
+    }
+
+    @Data
+    public static class Recorder {
+        private int syncIntervalMinutes = 10;
     }
 }
