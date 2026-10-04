@@ -53,6 +53,7 @@ public class DashboardProperties {
 
     @Data
     public static class Recorder {
+        private String baseUrl = "http://java-rtsp-recorder:8080";
         private int syncIntervalMinutes = 10;
     }
 }
