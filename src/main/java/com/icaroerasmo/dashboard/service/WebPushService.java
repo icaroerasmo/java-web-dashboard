@@ -97,6 +97,11 @@ public class WebPushService {
                         sub.endpoint(), sub.p256dh(), sub.auth(), payload);
                 HttpResponse response = sendWithTimeout(notification);
                 int status = response.getStatusLine().getStatusCode();
+                if (status >= 200 && status < 300) {
+                    log.info("Web Push delivered to {}: status={}", sub.endpoint(), status);
+                } else {
+                    log.warn("Web Push rejected for {}: status={}", sub.endpoint(), status);
+                }
                 if (status == 404 || status == 410) {
                     log.warn("Push subscription gone ({}), removing", status);
                     store.remove(sub);
