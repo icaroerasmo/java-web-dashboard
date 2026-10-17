@@ -3,18 +3,27 @@ package com.icaroerasmo.dashboard.messaging;
 import com.icaroerasmo.dashboard.config.RabbitMqConfig;
 import com.icaroerasmo.dashboard.service.WebPushService;
 import com.icaroerasmo.dashboard.websocket.NotificationWebSocketHandler;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
-@RequiredArgsConstructor
 public class NotificationEventListener {
 
     private final NotificationWebSocketHandler notificationWebSocketHandler;
     private final WebPushService webPushService;
+    private final TaskExecutor pushExecutor;
+
+    public NotificationEventListener(NotificationWebSocketHandler notificationWebSocketHandler,
+                                     WebPushService webPushService,
+                                     @Qualifier("pushExecutor") TaskExecutor pushExecutor) {
+        this.notificationWebSocketHandler = notificationWebSocketHandler;
+        this.webPushService = webPushService;
+        this.pushExecutor = pushExecutor;
+    }
 
     @RabbitListener(queues = RabbitMqConfig.DASHBOARD_NOTIFICATIONS_QUEUE)
     public void onNotification(NotificationSummary summary) {
@@ -24,6 +33,9 @@ public class NotificationEventListener {
         }
         log.debug("Notification summary received: id={}, mediaType={}, kind={}", summary.id(), summary.mediaType(), summary.kind());
         notificationWebSocketHandler.push(summary);
-        webPushService.broadcast(summary);
+        // Offload the (potentially slow) Web Push send to a dedicated executor so a
+        // hung push endpoint can never stall the RabbitMQ listener — that is what
+        // triggered the "delivery acknowledgement timed out" channel kills.
+        pushExecutor.execute(() -> webPushService.broadcast(summary));
     }
 }

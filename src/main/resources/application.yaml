@@ -44,3 +44,5 @@ dashboard:
     public-key: ${PUSH_PUBLIC_KEY:}
     private-key: ${PUSH_PRIVATE_KEY:}
     subject: ${PUSH_SUBJECT:mailto:cafofo@example.com}
+    subscriptions-file: ${PUSH_SUBSCRIPTIONS_FILE:/app/data/push-subscriptions.json}
+    send-timeout-seconds: ${PUSH_SEND_TIMEOUT_SECONDS:15}

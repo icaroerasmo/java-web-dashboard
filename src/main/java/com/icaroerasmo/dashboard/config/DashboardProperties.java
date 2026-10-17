@@ -31,6 +31,8 @@ public class DashboardProperties {
         private String publicKey;
         private String privateKey;
         private String subject = "mailto:cafofo@example.com";
+        private String subscriptionsFile = "/app/data/push-subscriptions.json";
+        private long sendTimeoutSeconds = 15;
     }
 
     @Data

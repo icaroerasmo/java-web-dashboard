@@ -19,6 +19,9 @@ import java.security.GeneralSecurityException;
 import java.security.Security;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Sends Web Push notifications to subscribed browsers. Uses the Web Push
@@ -35,6 +38,7 @@ public class WebPushService {
     private final ObjectMapper objectMapper;
 
     private PushService pushService;
+    private long sendTimeoutSeconds = 15L;
 
     @PostConstruct
     void init() {
@@ -43,6 +47,9 @@ public class WebPushService {
                 || push.getPrivateKey() == null || push.getPrivateKey().isBlank()) {
             log.warn("Web Push disabled: VAPID keys not configured");
             return;
+        }
+        if (push.getSendTimeoutSeconds() > 0) {
+            this.sendTimeoutSeconds = push.getSendTimeoutSeconds();
         }
         try {
             Security.addProvider(new BouncyCastleProvider());
@@ -88,12 +95,15 @@ public class WebPushService {
             try {
                 Notification notification = new Notification(
                         sub.endpoint(), sub.p256dh(), sub.auth(), payload);
-                HttpResponse response = pushService.send(notification);
+                HttpResponse response = sendWithTimeout(notification);
                 int status = response.getStatusLine().getStatusCode();
                 if (status == 404 || status == 410) {
                     log.warn("Push subscription gone ({}), removing", status);
                     store.remove(sub);
                 }
+            } catch (TimeoutException e) {
+                log.warn("Push send timed out after {}s for subscription {}",
+                        sendTimeoutSeconds, sub.endpoint());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 log.warn("Interrupted while sending push notification");
@@ -106,6 +116,19 @@ public class WebPushService {
                 store.remove(sub);
             }
         }
+    }
+
+    /**
+     * Sends a push notification with a bounded wait. The Web Push client makes an
+     * HTTP call to the browser vendor's push service (FCM, Mozilla autopush, etc.);
+     * if that endpoint hangs, we must not block the worker thread forever — a
+     * single hung subscription used to stall the whole listener.
+     */
+    private HttpResponse sendWithTimeout(Notification notification)
+            throws GeneralSecurityException, IOException, JoseException,
+            ExecutionException, InterruptedException, TimeoutException {
+        Future<HttpResponse> future = pushService.sendAsync(notification);
+        return future.get(sendTimeoutSeconds, TimeUnit.SECONDS);
     }
 
     private static boolean isBlank(String value) {
