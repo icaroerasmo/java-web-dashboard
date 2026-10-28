@@ -249,16 +249,13 @@ public class EnvService {
             if (line.matches("^  [A-Za-z0-9_-]+:$")) {
                 int serviceStart = i;
                 int serviceEnd = findServiceEnd(lines, serviceStart);
-                int envBlockStart = findEnvironmentBlockStart(lines, serviceStart, serviceEnd);
-                if (envBlockStart >= 0) {
-                    String serviceName = line.trim().substring(0, line.trim().length() - 1);
-                    Map<String, String> env = readServiceEnvironment(lines, serviceStart, serviceEnd, envBlockStart);
-                    for (String rawValue : env.values()) {
-                        for (String key : keys) {
-                            if (rawValue.contains("${" + key + "}") || rawValue.contains("${" + key + ":")) {
-                                result.add(serviceName);
-                                break;
-                            }
+                String serviceName = line.trim().substring(0, line.trim().length() - 1);
+                for (int j = serviceStart + 1; j <= serviceEnd; j++) {
+                    String rawLine = lines.get(j);
+                    for (String key : keys) {
+                        if (rawLine.contains("${" + key + "}") || rawLine.contains("${" + key + ":")) {
+                            result.add(serviceName);
+                            break;
                         }
                     }
                 }

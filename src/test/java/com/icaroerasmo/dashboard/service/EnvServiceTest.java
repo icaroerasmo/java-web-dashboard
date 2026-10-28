@@ -245,6 +245,49 @@ class EnvServiceTest {
     }
 
     @Test
+    void updateGlobalEnvVars_recreatesServiceReferencingVarInCommandBlock() throws Exception {
+        Files.writeString(composeFile, """
+                version: "3.9"
+
+                services:
+                  go2rtc:
+                    image: ghcr.io/alexxit/go2rtc:latest
+                    container_name: go2rtc
+                    restart: unless-stopped
+                    command:
+                      - go2rtc
+                      - -c
+                      - "{streams: {area_de_servico: ['ffmpeg:${AREA_DE_SERVICO_CAMERA_URL}#video=copy']}}"
+                  java-rtsp-recorder:
+                    image: ghcr.io/icaroerasmo/java-rtsp-recorder:latest
+                    container_name: java-rtsp-recorder
+                    restart: unless-stopped
+                """);
+        Files.writeString(envFile, "AREA_DE_SERVICO_CAMERA_URL=rtsp://192.168.1.10:554/stream1\n");
+
+        Path fakeBin = tempDir.resolve("fakebin");
+        Files.createDirectories(fakeBin);
+        Path argsFile = tempDir.resolve("args.txt");
+        Path fakeScript = fakeBin.resolve("docker-compose");
+        Files.writeString(fakeScript, "#!/bin/bash\necho \"$@\" >> " + argsFile + "\nexit 0\n");
+        fakeScript.toFile().setExecutable(true);
+        properties.setPodmanComposeBinary(fakeScript.toString());
+
+        List<EnvVar> envVars = envService.getGlobalEnvVars();
+        assertEquals(1, envVars.size());
+        envVars.get(0).setValue("rtsp://192.168.1.100:554/stream1");
+
+        envService.updateGlobalEnvVars(envVars);
+
+        String args = Files.readString(argsFile);
+        assertTrue(args.contains("go2rtc"));
+        assertFalse(args.contains("java-rtsp-recorder"));
+
+        String envContent = Files.readString(envFile);
+        assertTrue(envContent.contains("AREA_DE_SERVICO_CAMERA_URL=rtsp://192.168.1.100:554/stream1"));
+    }
+
+    @Test
     void resolveEnvRef_resolvesVariablesAndLiterals() {
         assertEquals("http://elasticsearch:9200", envService.resolveEnvRef("http://elasticsearch:9200"));
         assertEquals("rabbitmq", envService.resolveEnvRef("${RABBITMQ_HOST}"));
