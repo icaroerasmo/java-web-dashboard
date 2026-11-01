@@ -9,6 +9,7 @@ import { PushService } from './services/push.service';
 import { NotificationSummary } from './services/notification.service';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { NotificationDetailComponent } from './notification-detail/notification-detail.component';
+import { RecordsComponent } from './records/records.component';
 import { computeGrid, CameraGrid } from './services/grid-layout';
 import { buildDetectionMap } from './services/detection-map';
 
@@ -27,7 +28,7 @@ interface CameraStream {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MenuComponent, ConfigModalComponent, NotificationsComponent, NotificationDetailComponent],
+  imports: [CommonModule, MenuComponent, ConfigModalComponent, NotificationsComponent, NotificationDetailComponent, RecordsComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -38,6 +39,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   menuOpen = false;
   configModalOpen = false;
   notificationsOpen = false;
+  recordsOpen = false;
   notificationDetailId: string | null = null;
   theme: 'dark' | 'light' = 'dark';
   presentationMode = false;
@@ -795,6 +797,14 @@ player.video.muted = !player.video.muted;
 
   closeNotifications(): void {
     this.notificationsOpen = false;
+  }
+
+  openRecords(): void {
+    this.recordsOpen = true;
+  }
+
+  closeRecords(): void {
+    this.recordsOpen = false;
   }
 
   openNotificationDetail(id: string): void {

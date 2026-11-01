@@ -1,0 +1,81 @@
+@if (open) {
+  <div class="modal-backdrop" (click)="onClose()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <button class="close-btn" (click)="onClose()">&times;</button>
+
+      <div class="header">
+        <h2 class="title">Gravações</h2>
+      </div>
+
+      <div class="camera-chips">
+        <button
+          class="chip"
+          [class.active]="selectedCamera === 'all'"
+          (click)="selectCamera('all')"
+        >Todas</button>
+        @for (camera of cameras; track camera) {
+          <button
+            class="chip"
+            [class.active]="selectedCamera === camera"
+            (click)="selectCamera(camera)"
+          >{{ camera }}</button>
+        }
+      </div>
+
+      <div class="content" (scroll)="onScroll($event)">
+        @if (loading) {
+          <div class="empty">Carregando…</div>
+        } @else {
+          @for (r of all; track r.filename) {
+            <div class="record-entry">
+              <div class="record-item" (click)="togglePlay(r)">
+                <span class="record-time">{{ timeOf(r) }}</span>
+                @if (selectedCamera === 'all') {
+                  <span class="record-camera">{{ r.camera }}</span>
+                }
+                <span class="record-filename" [title]="r.filename">{{ r.filename }}</span>
+                <span class="record-size">{{ sizeLabel(r) }}</span>
+                <span class="record-source" [class.remote]="!r.local" [title]="r.local ? 'Arquivo local' : 'Google Drive'">
+                  {{ r.local ? 'local' : 'nuvem' }}
+                </span>
+                <button class="record-play" (click)="$event.stopPropagation(); togglePlay(r)" [attr.aria-expanded]="isExpanded(r)">
+                  {{ isExpanded(r) ? 'Fechar' : '▶' }}
+                </button>
+              </div>
+
+              @if (isExpanded(r)) {
+                <div class="record-player">
+                  @if (!isPlaying(r)) {
+                    <div class="record-player-note">
+                      Formato MKV: se a câmera grava em HEVC (garagens), o vídeo pode não tocar no navegador.
+                    </div>
+                  }
+                  <video
+                    [src]="streamUrl(r)"
+                    controls
+                    autoplay
+                    playsinline
+                    class="record-video"
+                    [class.hidden]="!isPlaying(r)"
+                    (loadeddata)="onVideoReady(r)"
+                    (error)="onVideoError(r)"
+                  ></video>
+                  @if (!isPlaying(r)) {
+                    <div class="record-error">Não foi possível reproduzir este vídeo.</div>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          @if (all.length === 0) {
+            <div class="empty">Nenhuma gravação encontrada. Execute a sincronização de registros.</div>
+          }
+          @if (loadingMore) {
+            <div class="loading-more">Carregando mais…</div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}

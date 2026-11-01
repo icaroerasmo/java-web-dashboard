@@ -156,6 +156,7 @@
   (openConfigs)="openConfigs()"
   (openPresentation)="enterPresentation()"
   (openNotifications)="openNotifications()"
+  (openRecords)="openRecords()"
   (close)="closeMenu()"
 />
 
@@ -169,6 +170,12 @@
 <app-notifications
   [open]="notificationsOpen"
   (close)="closeNotifications()"
+/>
+
+<!-- Recordings -->
+<app-records
+  [open]="recordsOpen"
+  (close)="closeRecords()"
 />
 
 <!-- Single notification detail (opened from a browser notification click) -->
