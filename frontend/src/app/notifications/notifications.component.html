@@ -10,7 +10,10 @@
 
       @if (tab === 'notifications') {
         <div class="content" (scroll)="onScroll($event)">
-          @for (n of all; track n.id) {
+          @for (n of all; track n.id; let i = $index) {
+            @if (isNewDay(i)) {
+              <div class="day-separator">{{ dayLabel(n) }}</div>
+            }
             <div class="notif-item">
               <div class="log-item">
                 <span class="log-time">{{ timeOf(n) }}</span>
@@ -66,7 +69,10 @@
             <input type="search" [(ngModel)]="searchText" (keyup.enter)="onSearch()" placeholder="Buscar no texto dos logs" />
           </div>
           <div class="log-list">
-            @for (n of filteredLogs(); track n.id) {
+            @for (n of filteredLogs(); track n.id; let i = $index) {
+              @if (isNewDay(i)) {
+                <div class="day-separator">{{ dayLabel(n) }}</div>
+              }
               <div class="log-entry">
                 <div class="log-item">
                   <span class="log-time">{{ timeOf(n) }}</span>
