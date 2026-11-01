@@ -253,7 +253,32 @@ export class NotificationsComponent implements OnChanges {
 
   timeOf(n: NotificationSummary): string {
     const d = new Date(n.timestamp);
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+  }
+
+  dayLabel(n: NotificationSummary): string {
+    const d = new Date(n.timestamp);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const weekdays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+    return `${weekdays[d.getDay()]} - ${dd}/${mm}/${yyyy}`;
+  }
+
+  isNewDay(index: number): boolean {
+    if (index <= 0) {
+      return true;
+    }
+    const prev = new Date(this.all[index - 1].timestamp);
+    const cur = new Date(this.all[index].timestamp);
+    return prev.getFullYear() !== cur.getFullYear()
+      || prev.getMonth() !== cur.getMonth()
+      || prev.getDate() !== cur.getDate();
   }
 
   sizeLabel(n: NotificationSummary): string {
