@@ -3,6 +3,7 @@ package com.icaroerasmo.dashboard.controller;
 import com.icaroerasmo.dashboard.dto.RecordsPage;
 import com.icaroerasmo.dashboard.service.RecordsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
@@ -48,9 +49,28 @@ public class RecordsController {
     /** Cursor-based page of recordings, newest first. */
     @GetMapping
     public RecordsPage list(@RequestParam(required = false) String camera,
+                            @RequestParam(required = false) String date,
+                            @RequestParam(required = false) String hour,
                             @RequestParam(defaultValue = "100") int limit,
                             @RequestParam(required = false) String cursor) {
-        return recordsService.search(camera, limit, cursor);
+        return recordsService.search(camera, date, hour, limit, cursor);
+    }
+
+    /** Video thumbnail (proxied to the recorder, which extracts it via ffmpeg). */
+    @GetMapping("/{filename}/thumbnail")
+    public ResponseEntity<byte[]> thumbnail(@PathVariable String filename) {
+        try {
+            byte[] thumb = recordsService.fetchThumbnail(filename);
+            if (thumb == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
+                    .body(thumb);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /** Streams a single recording (proxied to the recorder, which handles local/Drive). */

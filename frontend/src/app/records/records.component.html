@@ -22,6 +22,14 @@
         }
       </div>
 
+      <div class="records-filters">
+        <input type="date" [(ngModel)]="selectedDate" (change)="onFilterChange()" title="Data" />
+        <input type="number" min="0" max="23" [(ngModel)]="selectedHour" (change)="onFilterChange()" placeholder="Hora" title="Hora (0-23)" />
+        @if (hasFilters()) {
+          <button class="clear-filters" (click)="clearFilters()">Limpar</button>
+        }
+      </div>
+
       <div class="content" (scroll)="onScroll($event)">
         @if (loading) {
           <div class="empty">Carregando…</div>
@@ -29,15 +37,27 @@
           @for (r of all; track r.filename) {
             <div class="record-entry">
               <div class="record-item" (click)="togglePlay(r)">
-                <span class="record-time">{{ timeOf(r) }}</span>
-                @if (selectedCamera === 'all') {
-                  <span class="record-camera">{{ r.camera }}</span>
-                }
-                <span class="record-filename" [title]="r.filename">{{ r.filename }}</span>
-                <span class="record-size">{{ sizeLabel(r) }}</span>
-                <span class="record-source" [class.remote]="!r.local" [title]="r.local ? 'Arquivo local' : 'Google Drive'">
-                  {{ r.local ? 'local' : 'nuvem' }}
-                </span>
+                <img
+                  class="record-thumb"
+                  [src]="thumbnailUrl(r)"
+                  alt=""
+                  loading="lazy"
+                  (error)="$any($event.target).style.visibility = 'hidden'"
+                />
+                <div class="record-meta">
+                  <div class="record-meta-top">
+                    <span class="record-time">{{ timeOf(r) }}</span>
+                    @if (selectedCamera === 'all') {
+                      <span class="record-camera">{{ r.camera }}</span>
+                    }
+                  </div>
+                  <div class="record-meta-bottom">
+                    <span class="record-size">{{ sizeLabel(r) }}</span>
+                    <span class="record-source" [class.remote]="!r.local" [title]="r.local ? 'Arquivo local' : 'Google Drive'">
+                      {{ r.local ? 'local' : 'nuvem' }}
+                    </span>
+                  </div>
+                </div>
                 <button class="record-play" (click)="$event.stopPropagation(); togglePlay(r)" [attr.aria-expanded]="isExpanded(r)">
                   {{ isExpanded(r) ? 'Fechar' : '▶' }}
                 </button>
@@ -69,7 +89,7 @@
           }
 
           @if (all.length === 0) {
-            <div class="empty">Nenhuma gravação encontrada. Execute a sincronização de registros.</div>
+            <div class="empty">Nenhuma gravação encontrada.</div>
           }
           @if (loadingMore) {
             <div class="loading-more">Carregando mais…</div>
