@@ -252,17 +252,25 @@ public class RecordsService {
     }
 
     /** Searches recorded videos, newest first, with cursor-based pagination. */
-    public RecordsPage search(String camera, int limit, String cursor) {
+    public RecordsPage search(String camera, String date, String hour, int limit, String cursor) {
         int size = Math.max(1, Math.min(limit, 500));
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("size", size);
 
-        Map<String, Object> query = new LinkedHashMap<>();
+        List<Map<String, Object>> filters = new ArrayList<>();
         if (camera != null && !camera.isBlank()) {
-            query.put("bool", Map.of(
-                    "filter", List.of(Map.of("term", Map.of("camera", camera)))));
-        } else {
+            filters.add(Map.of("term", Map.of("camera", camera)));
+        }
+        Map<String, Object> timestampRange = timestampRange(date, hour);
+        if (timestampRange != null) {
+            filters.add(Map.of("range", timestampRange));
+        }
+
+        Map<String, Object> query = new LinkedHashMap<>();
+        if (filters.isEmpty()) {
             query.put("match_all", Map.of());
+        } else {
+            query.put("bool", Map.of("filter", filters));
         }
         body.put("query", query);
         body.put("sort", List.of(
@@ -299,6 +307,27 @@ public class RecordsService {
             log.warn("Failed to search records: {}", e.getMessage());
             return new RecordsPage(List.of(), null, false);
         }
+    }
+
+    private static Map<String, Object> timestampRange(String date, String hour) {
+        if (date == null || date.isBlank()) {
+            return null;
+        }
+        String hh = (hour != null && !hour.isBlank())
+                ? (hour.trim().length() == 1 ? "0" + hour.trim() : hour.trim())
+                : null;
+        String start = date + " " + (hh != null ? hh : "00") + ":00:00";
+        String end = date + " " + (hh != null ? hh : "23") + ":59:59";
+        return Map.of("timestamp", Map.of("gte", start, "lte", end));
+    }
+
+    /** Proxies a video thumbnail to the recorder (generated via ffmpeg, cached). */
+    public byte[] fetchThumbnail(String filename) {
+        String url = recorderBaseUrl + "/api/records/" + filename + "/thumbnail";
+        return restClient.get()
+                .uri(java.net.URI.create(url))
+                .retrieve()
+                .body(byte[].class);
     }
 
     /** Distinct camera names present in the index, sorted. */

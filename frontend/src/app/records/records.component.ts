@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RecordService, VideoRecord } from '../services/record.service';
 
 @Component({
   selector: 'app-records',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './records.component.html',
   styleUrl: './records.component.css'
 })
@@ -15,6 +16,8 @@ export class RecordsComponent implements OnChanges {
 
   cameras: string[] = [];
   selectedCamera = 'all';
+  selectedDate = '';
+  selectedHour = '';
   all: VideoRecord[] = [];
   loadingMore = false;
   hasMore = false;
@@ -41,8 +44,33 @@ export class RecordsComponent implements OnChanges {
     this.resetAndLoad();
   }
 
+  onFilterChange(): void {
+    this.resetAndLoad();
+  }
+
+  clearFilters(): void {
+    this.selectedDate = '';
+    this.selectedHour = '';
+    this.resetAndLoad();
+  }
+
+  hasFilters(): boolean {
+    return this.selectedDate !== '' || (this.selectedHour !== '' && this.selectedHour !== null);
+  }
+
   private cameraParam(): string | undefined {
     return this.selectedCamera !== 'all' ? this.selectedCamera : undefined;
+  }
+
+  private dateParam(): string | undefined {
+    return this.selectedDate || undefined;
+  }
+
+  private hourParam(): string | undefined {
+    if (this.selectedHour !== '' && this.selectedHour !== null && this.selectedHour !== undefined) {
+      return String(this.selectedHour);
+    }
+    return undefined;
   }
 
   private resetAndLoad(): void {
@@ -57,7 +85,7 @@ export class RecordsComponent implements OnChanges {
 
   private loadHistory(): void {
     this.loading = true;
-    this.recordService.getRecords(this.cameraParam(), this.pageSize).subscribe({
+    this.recordService.getRecords(this.cameraParam(), this.dateParam(), this.hourParam(), this.pageSize).subscribe({
       next: (page) => {
         this.all = page.items;
         this.nextCursor = page.nextCursor;
@@ -76,7 +104,7 @@ export class RecordsComponent implements OnChanges {
       return;
     }
     this.loadingMore = true;
-    this.recordService.getRecords(this.cameraParam(), this.pageSize, this.nextCursor).subscribe({
+    this.recordService.getRecords(this.cameraParam(), this.dateParam(), this.hourParam(), this.pageSize, this.nextCursor).subscribe({
       next: (page) => {
         const existing = new Set(this.all.map((r) => r.filename));
         const fresh = page.items.filter((r) => !existing.has(r.filename));
@@ -111,6 +139,10 @@ export class RecordsComponent implements OnChanges {
 
   streamUrl(r: VideoRecord): string {
     return this.recordService.streamUrl(r.filename);
+  }
+
+  thumbnailUrl(r: VideoRecord): string {
+    return this.recordService.thumbnailUrl(r.filename);
   }
 
   isExpanded(r: VideoRecord): boolean {

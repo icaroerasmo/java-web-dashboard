@@ -22,10 +22,16 @@ export interface RecordsPage {
 export class RecordService {
   constructor(private http: HttpClient) {}
 
-  getRecords(camera?: string, limit = 100, cursor?: string): Observable<RecordsPage> {
+  getRecords(camera?: string, date?: string, hour?: string, limit = 100, cursor?: string): Observable<RecordsPage> {
     let params = `limit=${limit}`;
     if (camera) {
       params += `&camera=${encodeURIComponent(camera)}`;
+    }
+    if (date) {
+      params += `&date=${encodeURIComponent(date)}`;
+    }
+    if (hour !== undefined && hour !== null && hour !== '') {
+      params += `&hour=${encodeURIComponent(String(hour))}`;
     }
     if (cursor) {
       params += `&cursor=${encodeURIComponent(cursor)}`;
@@ -39,5 +45,9 @@ export class RecordService {
 
   streamUrl(filename: string): string {
     return `/api/records/${encodeURIComponent(filename)}/stream`;
+  }
+
+  thumbnailUrl(filename: string): string {
+    return `/api/records/${encodeURIComponent(filename)}/thumbnail`;
   }
 }
