@@ -22,6 +22,7 @@ export class NotificationsComponent implements OnChanges {
   selectedKind = 'all';
   selectedDate = '';
   selectedHour = '';
+  today = new Date().toISOString().substring(0, 10); // yyyy-MM-dd
   searchText = '';
   expandedId: string | null = null;
   expandedLogId: string | null = null;

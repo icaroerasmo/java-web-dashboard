@@ -8,6 +8,20 @@
         <button class="tab-btn" [class.active]="tab === 'logs'" (click)="selectTab('logs')">Logs</button>
       </div>
 
+      <div class="filters">
+        <input type="date" [(ngModel)]="selectedDate" [max]="today" (change)="onFilterChange()" />
+        <input type="number" min="0" max="23" [(ngModel)]="selectedHour" (change)="onFilterChange()" placeholder="Hora" class="filter-hour" />
+        @if (tab === 'logs') {
+          <select [(ngModel)]="selectedKind" (change)="onFilterChange()">
+            <option value="all">Todos os tipos</option>
+            @for (k of kinds; track k) {
+              <option [value]="k">{{ k }}</option>
+            }
+          </select>
+          <input type="search" [(ngModel)]="searchText" (keyup.enter)="onSearch()" placeholder="Buscar no texto dos logs" />
+        }
+      </div>
+
       @if (tab === 'notifications') {
         <div class="content" (scroll)="onScroll($event)">
           @for (n of all; track n.id; let i = $index) {
@@ -57,17 +71,6 @@
         </div>
       } @else {
         <div class="content" (scroll)="onScroll($event)">
-          <div class="filters">
-            <input type="date" [(ngModel)]="selectedDate" (change)="onFilterChange()" />
-            <input type="number" min="0" max="23" [(ngModel)]="selectedHour" (change)="onFilterChange()" placeholder="Hora" class="filter-hour" />
-            <select [(ngModel)]="selectedKind" (change)="onFilterChange()">
-              <option value="all">Todos os tipos</option>
-              @for (k of kinds; track k) {
-                <option [value]="k">{{ k }}</option>
-              }
-            </select>
-            <input type="search" [(ngModel)]="searchText" (keyup.enter)="onSearch()" placeholder="Buscar no texto dos logs" />
-          </div>
           <div class="log-list">
             @for (n of filteredLogs(); track n.id; let i = $index) {
               @if (isNewDay(i)) {
