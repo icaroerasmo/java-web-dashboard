@@ -34,7 +34,10 @@
         @if (loading) {
           <div class="empty">Carregando…</div>
         } @else {
-          @for (r of all; track r.filename) {
+          @for (r of all; track r.filename; let i = $index) {
+            @if (isNewDay(i)) {
+              <div class="day-separator">{{ dayLabel(r) }}</div>
+            }
             <div class="record-entry">
               <div class="record-item" (click)="togglePlay(r)">
                 <img
