@@ -106,16 +106,6 @@
   outline: none;
 }
 
-.records-filters input[type="date"] {
-  flex: 1;
-  min-width: 120px;
-}
-
-.records-filters input[type="number"] {
-  width: 72px;
-  flex-shrink: 0;
-}
-
 .clear-filters {
   padding: 6px 12px;
   background: none;
@@ -195,6 +185,7 @@
 }
 
 .record-camera {
+  align-self: flex-start;
   color: var(--text-muted);
   font-size: 11px;
   font-family: monospace;
@@ -202,11 +193,7 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 1px 6px;
-  flex-shrink: 0;
   white-space: nowrap;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .day-separator {
@@ -385,9 +372,5 @@
   .record-thumb {
     width: 80px;
     height: 45px;
-  }
-
-  .record-camera {
-    max-width: 76px;
   }
 }
