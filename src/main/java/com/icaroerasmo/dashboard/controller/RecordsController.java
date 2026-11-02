@@ -3,6 +3,7 @@ package com.icaroerasmo.dashboard.controller;
 import com.icaroerasmo.dashboard.dto.RecordsPage;
 import com.icaroerasmo.dashboard.service.RecordsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -80,5 +82,24 @@ public class RecordsController {
                 .orElse(MediaType.APPLICATION_OCTET_STREAM);
         StreamingResponseBody body = outputStream -> recordsService.streamFromRecorder(filename, outputStream);
         return ResponseEntity.ok().contentType(mediaType).body(body);
+    }
+
+    /**
+     * Downloads a single recording. Same proxied stream as {@link #stream(String)},
+     * but with a {@code Content-Disposition: attachment} header so the browser saves
+     * the file instead of playing it inline.
+     */
+    @GetMapping("/{filename}/download")
+    public ResponseEntity<StreamingResponseBody> download(@PathVariable String filename) {
+        MediaType mediaType = MediaTypeFactory.getMediaType(filename)
+                .orElse(MediaType.APPLICATION_OCTET_STREAM);
+        ContentDisposition disposition = ContentDisposition.attachment()
+                .filename(filename, StandardCharsets.UTF_8)
+                .build();
+        StreamingResponseBody body = outputStream -> recordsService.streamFromRecorder(filename, outputStream);
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(body);
     }
 }

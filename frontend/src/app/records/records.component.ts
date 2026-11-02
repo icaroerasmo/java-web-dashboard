@@ -18,6 +18,7 @@ export class RecordsComponent implements OnChanges {
   selectedCamera = 'all';
   selectedDate = '';
   selectedHour = '';
+  today = new Date().toISOString().substring(0, 10); // yyyy-MM-dd
   all: VideoRecord[] = [];
   loadingMore = false;
   hasMore = false;
@@ -139,6 +140,10 @@ export class RecordsComponent implements OnChanges {
 
   streamUrl(r: VideoRecord): string {
     return this.recordService.streamUrl(r.filename);
+  }
+
+  downloadUrl(r: VideoRecord): string {
+    return this.recordService.downloadUrl(r.filename);
   }
 
   thumbnailUrl(r: VideoRecord): string {
