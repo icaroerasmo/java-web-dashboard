@@ -59,7 +59,7 @@
         <div class="content" (scroll)="onScroll($event)">
           <div class="filters">
             <input type="date" [(ngModel)]="selectedDate" (change)="onFilterChange()" />
-            <input type="number" min="0" max="23" [(ngModel)]="selectedHour" (change)="onFilterChange()" placeholder="Hora" />
+            <input type="number" min="0" max="23" [(ngModel)]="selectedHour" (change)="onFilterChange()" placeholder="Hora" class="filter-hour" />
             <select [(ngModel)]="selectedKind" (change)="onFilterChange()">
               <option value="all">Todos os tipos</option>
               @for (k of kinds; track k) {

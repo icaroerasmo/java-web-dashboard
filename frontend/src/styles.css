@@ -72,6 +72,21 @@ select option {
   background-color: var(--select-option-bg);
 }
 
+/* Tamanho fixo e consistente dos campos de data/hora nos filtros do dashboard */
+input[type="date"],
+input.filter-hour {
+  width: 150px;
+  flex: 0 0 150px;
+  min-width: 0;
+  max-width: 150px;
+}
+
+input.filter-hour {
+  width: 72px;
+  flex: 0 0 72px;
+  max-width: 72px;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }
