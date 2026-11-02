@@ -205,7 +205,6 @@
   flex-shrink: 0;
   white-space: nowrap;
   min-width: 0;
-  max-width: 76px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -357,5 +356,9 @@
   .record-thumb {
     width: 80px;
     height: 45px;
+  }
+
+  .record-camera {
+    max-width: 76px;
   }
 }
