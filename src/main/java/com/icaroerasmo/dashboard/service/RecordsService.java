@@ -253,6 +253,10 @@ public class RecordsService {
 
     /** Searches recorded videos, newest first, with cursor-based pagination. */
     public RecordsPage search(String camera, String date, String hour, int limit, String cursor) {
+        if (isFutureDate(date)) {
+            log.debug("Ignoring records search with future date: {}", date);
+            return new RecordsPage(List.of(), null, false);
+        }
         int size = Math.max(1, Math.min(limit, 500));
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("size", size);
@@ -319,6 +323,22 @@ public class RecordsService {
         String start = date + " " + (hh != null ? hh : "00") + ":00:00";
         String end = date + " " + (hh != null ? hh : "23") + ":59:59";
         return Map.of("timestamp", Map.of("gte", start, "lte", end));
+    }
+
+    /**
+     * Returns true when {@code date} is strictly after today, in which case a
+     * filter makes no sense (no future recordings can exist).
+     */
+    private static boolean isFutureDate(String date) {
+        if (date == null || date.isBlank()) {
+            return false;
+        }
+        try {
+            java.time.LocalDate parsed = java.time.LocalDate.parse(date.trim());
+            return parsed.isAfter(java.time.LocalDate.now());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /** Proxies a video thumbnail to the recorder (generated via ffmpeg, cached). */

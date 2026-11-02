@@ -23,7 +23,7 @@
       </div>
 
       <div class="records-filters">
-        <input type="date" [(ngModel)]="selectedDate" (change)="onFilterChange()" title="Data" />
+        <input type="date" [(ngModel)]="selectedDate" [max]="today" (change)="onFilterChange()" title="Data" />
         <input type="number" min="0" max="23" [(ngModel)]="selectedHour" (change)="onFilterChange()" placeholder="Hora" title="Hora (0-23)" />
         @if (hasFilters()) {
           <button class="clear-filters" (click)="clearFilters()">Limpar</button>
@@ -61,9 +61,18 @@
                     </span>
                   </div>
                 </div>
-                <button class="record-play" (click)="$event.stopPropagation(); togglePlay(r)" [attr.aria-expanded]="isExpanded(r)">
-                  {{ isExpanded(r) ? 'Fechar' : '▶' }}
-                </button>
+                <div class="record-actions">
+                  <button class="record-play" (click)="$event.stopPropagation(); togglePlay(r)" [attr.aria-expanded]="isExpanded(r)">
+                    {{ isExpanded(r) ? 'Fechar' : '▶' }}
+                  </button>
+                  <a
+                    class="record-download"
+                    [href]="downloadUrl(r)"
+                    [attr.download]="r.filename"
+                    title="Baixar vídeo"
+                    (click)="$event.stopPropagation()"
+                  >⬇</a>
+                </div>
               </div>
 
               @if (isExpanded(r)) {

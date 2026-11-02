@@ -47,6 +47,10 @@ export class RecordService {
     return `/api/records/${encodeURIComponent(filename)}/stream`;
   }
 
+  downloadUrl(filename: string): string {
+    return `/api/records/${encodeURIComponent(filename)}/download`;
+  }
+
   thumbnailUrl(filename: string): string {
     return `/api/records/${encodeURIComponent(filename)}/thumbnail`;
   }

@@ -247,6 +247,13 @@
   color: var(--amber);
 }
 
+.record-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .record-play {
   background: none;
   border: 1px solid var(--border-strong);
@@ -261,6 +268,28 @@
 
 .record-play:hover {
   border-color: var(--accent);
+}
+
+.record-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.record-download:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .record-player {
