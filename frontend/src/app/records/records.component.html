@@ -51,7 +51,7 @@
                   <div class="record-meta-top">
                     <span class="record-time">{{ timeOf(r) }}</span>
                     @if (selectedCamera === 'all') {
-                      <span class="record-camera">{{ r.camera }}</span>
+                      <span class="record-camera" [title]="r.camera">{{ r.camera }}</span>
                     }
                   </div>
                   <div class="record-meta-bottom">
