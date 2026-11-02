@@ -186,6 +186,23 @@ export class RecordsComponent implements OnChanges {
     return `${d}/${m}/${y} ${hh}:${mm}`;
   }
 
+  dayLabel(r: VideoRecord): string {
+    const date = (r.timestamp || '').substring(0, 10); // yyyy-MM-dd
+    const [y, m, d] = date.split('-');
+    const weekdays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+    const dow = weekdays[new Date(Number(y), Number(m) - 1, Number(d)).getDay()];
+    return `${dow} - ${d}/${m}/${y}`;
+  }
+
+  isNewDay(index: number): boolean {
+    if (index <= 0) {
+      return true;
+    }
+    const prev = (this.all[index - 1].timestamp || '').substring(0, 10);
+    const cur = (this.all[index].timestamp || '').substring(0, 10);
+    return prev !== cur;
+  }
+
   sizeLabel(r: VideoRecord): string {
     if (!r.size || r.size <= 0) {
       return '';
