@@ -42,6 +42,10 @@ public class NotificationController {
                                              @RequestParam(required = false) String kind,
                                              @RequestParam(required = false) String date,
                                              @RequestParam(required = false) String hour) {
+        if (isFutureDate(date)) {
+            log.debug("Ignoring notifications search with future date: {}", date);
+            return new NotificationPage(List.of(), null, false);
+        }
         try {
             StringBuilder url = new StringBuilder(notifierBaseUrl)
                     .append("/api/notifications?type=").append(type)
@@ -65,6 +69,19 @@ public class NotificationController {
     private void appendParam(StringBuilder url, String name, String value) {
         if (value != null && !value.isBlank()) {
             url.append('&').append(name).append('=').append(URLEncoder.encode(value, StandardCharsets.UTF_8));
+        }
+    }
+
+    /** Returns true when {@code date} is strictly after today (no future notifications/logs exist). */
+    private static boolean isFutureDate(String date) {
+        if (date == null || date.isBlank()) {
+            return false;
+        }
+        try {
+            java.time.LocalDate parsed = java.time.LocalDate.parse(date.trim());
+            return parsed.isAfter(java.time.LocalDate.now());
+        } catch (Exception e) {
+            return false;
         }
     }
 
