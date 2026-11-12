@@ -63,7 +63,14 @@
     } @else if (isBoolean(config[key])) {
       <div class="field-row">
         <label class="field-label">{{ key }}</label>
-        <input type="checkbox" [(ngModel)]="config[key]" />
+        @if (isToggleField(key)) {
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="config[key]" />
+            <span class="toggle-slider"></span>
+          </label>
+        } @else {
+          <input type="checkbox" [(ngModel)]="config[key]" />
+        }
       </div>
     } @else if (isNumber(config[key]) || isNumberField(key)) {
       <div class="field-row">

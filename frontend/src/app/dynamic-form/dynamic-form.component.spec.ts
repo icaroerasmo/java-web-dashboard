@@ -12,10 +12,11 @@ describe('DynamicFormComponent', () => {
     }).compileComponents();
   });
 
-  function createComponent(config: any): void {
+  function createComponent(config: any, moduleName = ''): void {
     fixture = TestBed.createComponent(DynamicFormComponent);
     component = fixture.componentInstance;
     component.config = config;
+    component.moduleName = moduleName;
     fixture.detectChanges();
   }
 
@@ -80,5 +81,74 @@ describe('DynamicFormComponent', () => {
 
     expect(fieldLabels()).toContain('max-retries');
     expect(fixture.nativeElement.querySelector('input[type="number"]')).toBeTruthy();
+  });
+
+  it('renders the camera enabled flag as a toggle switch', async () => {
+    createComponent(
+      { rtsp: { cameras: [{ enabled: true, url: 'rtsp://cam' }] } },
+      'java-rtsp-recorder'
+    );
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const toggle = fixture.nativeElement.querySelector('.toggle-switch');
+    expect(toggle).toBeTruthy();
+    expect(toggle.querySelector('.toggle-slider')).toBeTruthy();
+    expect(toggle.querySelector('input[type="checkbox"]').checked).toBeTrue();
+  });
+
+  it('keeps the plain checkbox for booleans that are not camera toggles', () => {
+    createComponent(
+      { rtsp: { cameras: [{ enabled: true, url: 'rtsp://cam' }], 'keep-awake': true } },
+      'java-rtsp-recorder'
+    );
+
+    expect(fixture.nativeElement.querySelectorAll('.toggle-switch').length).toBe(1);
+    expect(fixture.nativeElement.querySelectorAll('input[type="checkbox"]').length).toBe(2);
+  });
+
+  it('writes the toggle state back to the config as a boolean', async () => {
+    createComponent(
+      { rtsp: { cameras: [{ enabled: true, url: 'rtsp://cam' }] } },
+      'java-rtsp-recorder'
+    );
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('.toggle-switch input[type="checkbox"]') as HTMLInputElement;
+    expect(input.checked).toBeTrue();
+
+    input.checked = false;
+    input.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(component.config.rtsp.cameras[0].enabled).toBeFalse();
+  });
+
+  it('treats the camera enabled flag as a toggle for every camera module', () => {
+    const cases: Array<[string, string]> = [
+      ['java-rtsp-recorder', 'rtsp.cameras[]'],
+      ['java-object-detection', 'object-detection.streams.cameras[]'],
+      ['java-live-transmission', 'live.cameras[]'],
+    ];
+
+    for (const [moduleName, parentPath] of cases) {
+      createComponent({ enabled: true }, moduleName);
+      component.parentPath = parentPath;
+      expect(component.isToggleField('enabled')).withContext(moduleName).toBeTrue();
+    }
+  });
+
+  it('defaults the enabled flag to true when cloning an array item', () => {
+    createComponent(
+      { cameras: [{ enabled: false, url: 'rtsp://cam' }] },
+      'java-rtsp-recorder'
+    );
+
+    component.addArrayItem('cameras');
+
+    expect(component.config.cameras.length).toBe(2);
+    expect(component.config.cameras[1].enabled).toBeTrue();
+    expect(component.config.cameras[1].url).toBe('');
   });
 });

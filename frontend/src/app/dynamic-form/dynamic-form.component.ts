@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { resolveEnumOptions, resolveSecretField } from '../services/field-registry';
+import { resolveEnumOptions, resolveSecretField, resolveToggleField } from '../services/field-registry';
 
 @Component({
   selector: 'app-dynamic-form',
@@ -94,6 +94,11 @@ export class DynamicFormComponent implements OnInit {
     return resolveSecretField(this.moduleName, path);
   }
 
+  isToggleField(key: string): boolean {
+    const path = this.getFieldPath(key);
+    return resolveToggleField(this.moduleName, path);
+  }
+
   toggleReveal(key: string): void {
     const path = this.getFieldPath(key);
     if (this.revealedFields.has(path)) {
@@ -114,7 +119,7 @@ export class DynamicFormComponent implements OnInit {
     if (arr.length > 0 && this.isObject(arr[0])) {
       const template: any = {};
       for (const k of Object.keys(arr[0])) {
-        template[k] = '';
+        template[k] = k === 'enabled' ? true : '';
       }
       arr.push(template);
     } else {
