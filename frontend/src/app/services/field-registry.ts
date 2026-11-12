@@ -68,3 +68,24 @@ export function resolveSecretField(
   if (!secrets) return false;
   return secrets.includes(currentPath);
 }
+
+export const TOGGLE_REGISTRY: Record<string, string[]> = {
+  'java-rtsp-recorder': [
+    'rtsp.cameras[].enabled',
+  ],
+  'java-object-detection': [
+    'object-detection.streams.cameras[].enabled',
+  ],
+  'java-live-transmission': [
+    'live.cameras[].enabled',
+  ],
+};
+
+export function resolveToggleField(
+  moduleName: string,
+  currentPath: string,
+): boolean {
+  const toggles = TOGGLE_REGISTRY[moduleName];
+  if (!toggles) return false;
+  return toggles.includes(currentPath);
+}
